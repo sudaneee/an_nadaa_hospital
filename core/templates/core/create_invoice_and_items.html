@@ -1,0 +1,224 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Invoice and Invoice Items</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'create_invoice_and_items' %}">
+                {% csrf_token %}
+                
+                <!-- Patient or Family Selection -->
+                <div class="form-group">
+                    <label for="patient_id">Select Patient</label>
+                    <select name="patient_id" id="patient_id" class="form-control select2" onchange="toggleCustomNameField()">
+                        <option value="">Select Patient</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }} ({{ patient.patient_file_number }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="family_id">Select Family</label>
+                    <select name="family_id" id="family_id" class="form-control select2" onchange="toggleCustomNameField()">
+                        <option value="">Select Family</option>
+                        {% for family in families %}
+                        <option value="{{ family.id }}">{{ family.name }} ({{ family.file_number }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Custom Name for Non-Existing Patient or Family -->
+                <div id="custom-name-field">
+                    <div class="form-group">
+                        <label for="custom_name">Name for Invoice (if not a registered patient or family)</label>
+                        <input type="text" name="custom_name" id="custom_name" class="form-control">
+                    </div>
+                </div>
+                
+                <!-- Item Selection -->
+                <div id="item-forms">
+                    <div class="row item-form">
+                        <div class="col-md-3 form-group">
+                            <label for="item_type">Item Type</label>
+                            <select name="item_type" class="form-control item-type-select" onchange="handleItemTypeChange(this)">
+                                <option value="">Select Type</option>
+                                <option value="Service">Service</option>
+                                <option value="Medication">Medication</option>
+                                <option value="InvestigationRequest">Investigation Request</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group item-select-container">
+                            <!-- Dynamic item selection will appear here based on item type -->
+                        </div>
+                        <div class="col-md-2 form-group">
+                            <label for="unit_price">Price (₦)</label>
+                            <input type="number" name="unit_price" class="form-control unit-price" placeholder="Enter price">
+                        </div>
+                        <div class="col-md-1 form-group">
+                            <label for="quantity">Qty</label>
+                            <input type="number" name="quantity" class="form-control quantity" value="1">
+                        </div>
+                        <div class="col-md-1 form-group d-flex align-items-end">
+                            <button type="button" class="btn btn-success btn-icon" onclick="addItemToTable(this)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table for Displaying Items -->
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Item Type</th>
+                            <th>Item</th>
+                            <th>Unit Price (₦)</th>
+                            <th>Quantity</th>
+                            <th>Total Price (₦)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items-table-body">
+                        <!-- Invoice item rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="mt-3">
+                    <h5>Overall Total: <span id="overall-total">₦0.00</span></h5>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleCustomNameField() {
+    var patientSelect = document.getElementById('patient_id');
+    var familySelect = document.getElementById('family_id');
+    var customNameField = document.getElementById('custom-name-field');
+    
+    // Show the custom name field by default if no patient or family is selected
+    if (patientSelect.value === "" && familySelect.value === "") {
+        customNameField.style.display = 'block';
+    } else {
+        customNameField.style.display = 'none';
+    }
+}
+
+function handleItemTypeChange(selectElement) {
+    var itemType = selectElement.value;
+    var itemSelectContainer = selectElement.closest('.item-form').querySelector('.item-select-container');
+    var unitPriceInput = selectElement.closest('.item-form').querySelector('.unit-price');
+
+    itemSelectContainer.innerHTML = ''; // Clear previous selection
+    unitPriceInput.value = ''; // Reset price
+
+    if (itemType === 'Service') {
+        var select = '<select name="service_id" class="form-control item-select" onchange="updateUnitPrice(this)"><option value="">Select Service</option>';
+        {% for service in services %}
+        select += '<option value="{{ service.id }}" data-price="{{ service.cost }}">{{ service.name }}</option>';
+        {% endfor %}
+        select += '</select>';
+        itemSelectContainer.innerHTML = select;
+    } else if (itemType === 'Medication') {
+        var select = '<select name="medication_id" class="form-control item-select" onchange="updateUnitPrice(this)"><option value="">Select Medication</option>';
+        {% for medication in medications %}
+        select += '<option value="{{ medication.id }}" data-price="{{ medication.unit_price }}">{{ medication.name }}</option>';
+        {% endfor %}
+        select += '</select>';
+        itemSelectContainer.innerHTML = select;
+    } else if (itemType === 'InvestigationRequest') {
+        var select = '<select name="investigationrequest_id" class="form-control item-select" onchange="updateUnitPrice(this)"><option value="">Select Investigation Request</option>';
+        {% for investigation_request in investigation_requests %}
+        select += '<option value="{{ investigation_request.id }}" data-price="{{ investigation_request.investigation.price }}">{{ investigation_request.investigation.name }}</option>';
+        {% endfor %}
+        select += '</select>';
+        itemSelectContainer.innerHTML = select;
+    } else if (itemType === 'Others') {
+        var input = '<input type="text" name="other_item" class="form-control" placeholder="Enter item name">';
+        itemSelectContainer.innerHTML = input;
+        unitPriceInput.removeAttribute('readonly');
+    }
+}
+
+function updateUnitPrice(selectElement) {
+    var selectedOption = selectElement.options[selectElement.selectedIndex];
+    var price = selectedOption.getAttribute('data-price');
+    var unitPriceInput = selectElement.closest('.item-form').querySelector('.unit-price');
+    
+    if (price) {
+        unitPriceInput.value = price;
+        unitPriceInput.setAttribute('readonly', 'readonly');
+    } else {
+        unitPriceInput.removeAttribute('readonly');
+    }
+}
+
+function addItemToTable(button) {
+    var itemForm = button.closest('.item-form');
+    var itemType = itemForm.querySelector('select[name="item_type"]').value;
+    var itemSelect = itemForm.querySelector('.item-select');
+    var itemName = itemSelect ? itemSelect.options[itemSelect.selectedIndex].text : itemForm.querySelector('input[name="other_item"]').value;
+    var unitPrice = parseFloat(itemForm.querySelector('.unit-price').value);
+    var quantity = parseInt(itemForm.querySelector('.quantity').value);
+    var totalPrice = unitPrice * quantity;
+
+    if (!itemType || !itemName || isNaN(unitPrice) || isNaN(quantity)) {
+        alert("Please select item type, item, and enter valid price and quantity.");
+        return;
+    }
+
+    var tbody = document.getElementById('invoice-items-table-body');
+    var row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td>${itemType}</td>
+        <td>${itemName}</td>
+        <td>${unitPrice.toFixed(2)}</td>
+        <td>${quantity}</td>
+        <td>${totalPrice.toFixed(2)}</td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeItemRow(this)">Remove</button></td>
+        <input type="hidden" name="item_type[]" value="${itemType}">
+        <input type="hidden" name="item_name[]" value="${itemName}">
+        <input type="hidden" name="unit_price[]" value="${unitPrice}">
+        <input type="hidden" name="quantity[]" value="${quantity}">
+    `;
+
+    tbody.appendChild(row);
+    updateOverallTotal();
+}
+
+function removeItemRow(button) {
+    var row = button.closest('tr');
+    row.remove();
+    updateOverallTotal();
+}
+
+function updateOverallTotal() {
+    var total = 0;
+    document.querySelectorAll('#invoice-items-table-body tr').forEach(function(row) {
+        var rowTotal = parseFloat(row.children[4].innerText);
+        total += rowTotal;
+    });
+    document.getElementById('overall-total').innerText = `₦${total.toFixed(2)}`;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize select2 elements
+    $('.select2').select2({
+        width: '100%',
+        theme: 'bootstrap4'
+    });
+
+    // Show the custom name field by default
+    toggleCustomNameField();
+});
+</script>
+{% endblock content %}

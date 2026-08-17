@@ -1,0 +1,26 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Appointment</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="Scheduled" {% if appointment.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                        <option value="Completed" {% if appointment.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        <option value="Cancelled" {% if appointment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Update Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

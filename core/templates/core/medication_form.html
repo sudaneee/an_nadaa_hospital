@@ -1,0 +1,36 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{% if medication %}Edit{% else %}Add{% endif %} Medication</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" class="form-control" value="{% if medication %}{{ medication.name }}{% endif %}" >
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" class="form-control" required>{% if medication %}{{ medication.description }}{% endif %}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Unit Price</label>
+                    <input type="number" name="unit_price" class="form-control" value="{% if medication %}{{ medication.unit_price }}{% endif %}" >
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <select name="supplier" class="form-control select2" >
+                        {% for supplier in suppliers %}
+                        <option value="{{ supplier.id }}" {% if medication and medication.supplier.id == supplier.id %}selected{% endif %}>{{ supplier.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">{% if medication %}Update{% else %}Add{% endif %} Medication</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

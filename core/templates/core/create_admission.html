@@ -1,0 +1,31 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Admission for {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="reason">Reason for Admission</label>
+                    <textarea name="reason" class="form-control" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ward">Ward</label>
+                    <select name="ward" id="ward" class="form-control">
+                        <option value="Maternity">Maternity</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Pediatrics">Labour</option>
+                        <option value="SCUB">SCUB</option>
+                    </select>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-success">Create Admission</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

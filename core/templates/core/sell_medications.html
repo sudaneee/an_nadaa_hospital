@@ -1,0 +1,157 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Sell Medications</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="patient-select">Select Patient</label>
+                    <select id="patient-select" name="patient_id" class="form-control select2">
+                        <option value="" disabled selected>Select a patient</option>
+                        {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }} [{{patient.patient_file_number}}]</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="medication-select">Select Medications</label>
+                    <select id="medication-select" class="form-control select2" multiple="multiple">
+                        {% for medication in medications %}
+                            <option value="{{ medication.id }}" data-name="{{ medication.name }}" data-price="{{ medication.unit_price }}">{{ medication.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Table for Medications -->
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Medication Name</th>
+                            <th>Unit Price (₦)</th>
+                            <th>Quantity</th>
+                            <th>Total (₦)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medications-table-body">
+                        <!-- Medication rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="mt-3">
+                    <h5>Overall Total: <span id="overall-total">₦0.00</span></h5>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Create Invoice</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: 'Select medications'
+        });
+    
+        const calculateTotal = () => {
+            let overallTotal = 0;
+            const rows = document.querySelectorAll('.medication-row');
+            rows.forEach(function (row) {
+                const price = parseFloat(row.querySelector('.medication-price').innerText);
+                const quantity = parseInt(row.querySelector('input[name="quantity"]').value);
+                const total = price * quantity;
+                row.querySelector('.medication-total').innerText = total.toFixed(2);
+                overallTotal += total;
+            });
+            document.getElementById('overall-total').innerText = `₦${overallTotal.toFixed(2)}`;
+        };
+    
+        const addMedicationRow = (medicationId, medicationName, medicationPrice) => {
+            const tbody = document.getElementById('medications-table-body');
+    
+            // Check if the medication is already added
+            if (document.getElementById(`medication-row-${medicationId}`)) {
+                return;
+            }
+    
+            const row = document.createElement('tr');
+            row.className = 'medication-row';
+            row.id = `medication-row-${medicationId}`;
+    
+            const nameCell = document.createElement('td');
+            nameCell.innerText = medicationName;
+    
+            const priceCell = document.createElement('td');
+            priceCell.className = 'medication-price';
+            priceCell.innerText = medicationPrice.toFixed(2);
+    
+            const quantityCell = document.createElement('td');
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.name = 'quantity';
+            quantityInput.value = '1';
+            quantityInput.min = '1';
+            quantityInput.className = 'form-control';
+            quantityInput.addEventListener('input', calculateTotal);
+            quantityCell.appendChild(quantityInput);
+    
+            const totalCell = document.createElement('td');
+            totalCell.className = 'medication-total';
+            totalCell.innerText = medicationPrice.toFixed(2);
+    
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'medication_id';
+            hiddenInput.value = medicationId;
+    
+            row.appendChild(nameCell);
+            row.appendChild(priceCell);
+            row.appendChild(quantityCell);
+            row.appendChild(totalCell);
+            row.appendChild(hiddenInput);
+    
+            tbody.appendChild(row);
+        };
+    
+        const removeMedicationRow = (medicationId) => {
+            const row = document.getElementById(`medication-row-${medicationId}`);
+            if (row) {
+                row.remove();
+                calculateTotal();  // Recalculate the total after removing a row
+            }
+        };
+    
+        $('#medication-select').on('change', function () {
+            const selectedOptions = $(this).select2('data');
+    
+            selectedOptions.forEach(function (option) {
+                const medicationId = option.id;
+                const medicationName = option.text;
+                const medicationPrice = parseFloat(option.element.dataset.price);
+    
+                addMedicationRow(medicationId, medicationName, medicationPrice);
+            });
+    
+            calculateTotal();  // Calculate the total after every change
+        });
+    
+        $('#medication-select').on('select2:unselect', function (e) {
+            const deselectedOption = e.params.data;
+            const medicationId = deselectedOption.id;
+            removeMedicationRow(medicationId);  // Remove row when medication is deselected
+        });
+    
+        document.getElementById('medications-table-body').addEventListener('input', calculateTotal);
+    });
+    
+</script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+{% endblock content %}

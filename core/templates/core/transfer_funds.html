@@ -1,0 +1,71 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Transfer Funds</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Select Source Wallet -->
+                <div class="form-group">
+                    <label for="source_wallet">Select Source Wallet</label>
+                    <select name="source_wallet" id="source_wallet" class="form-control select2">
+                        <option value="" disabled selected>Select Source Wallet</option>
+                        {% for wallet in wallets %}
+                        <option value="{{ wallet.id }}">
+                            {% if wallet.family %}
+                                Family: {{ wallet.family.name }}[{{wallet.family.file_number}}] (₦{{ wallet.balance|floatformat:2|intcomma }})
+                            {% elif wallet.patient %}
+                                Patient: {{ wallet.patient.first_name }} {{ wallet.patient.last_name }} [{{wallet.patient.patient_file_number}}] (₦{{ wallet.balance|floatformat:2|intcomma }})
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Select Target Wallet -->
+                <div class="form-group">
+                    <label for="target_wallet">Select Target Wallet</label>
+                    <select name="target_wallet" id="target_wallet" class="form-control select2">
+                        <option value="" disabled selected>Select Target Wallet</option>
+                        {% for wallet in wallets %}
+                        <option value="{{ wallet.id }}">
+                            {% if wallet.family %}
+                                Family: {{ wallet.family.name }}[{{wallet.family.file_number}}] (₦{{ wallet.balance|floatformat:2|intcomma }})
+                            {% elif wallet.patient %}
+                                Patient: {{ wallet.patient.first_name }} {{ wallet.patient.last_name }} [{{wallet.patient.patient_file_number}}]  (₦{{ wallet.balance|floatformat:2|intcomma }})
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Amount to Transfer -->
+                <div class="form-group">
+                    <label for="amount">Amount to Transfer (₦)</label>
+                    <input type="number" name="amount" id="amount" class="form-control" min="0" required>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary">Transfer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include Select2 CSS and JS for better dropdowns -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: 'Select Wallet'
+        });
+    });
+</script>
+{% endblock content %}

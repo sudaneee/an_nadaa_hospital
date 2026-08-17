@@ -1,0 +1,28 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Seizure Chart for {{ admission.patient.first_name }} {{ admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="duration">Seizure Duration</label>
+                    <input type="text" name="duration" class="form-control" id="duration" placeholder="Enter seizure duration">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" class="form-control" id="description" placeholder="Enter seizure description"></textarea>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Seizure Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

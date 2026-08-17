@@ -1,0 +1,165 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+      <!-- Main Content -->
+      <div class="main-content mt-1">
+        <div class="card">
+            <div class="card-header">
+                <h4>Update Patient Information</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Patient Photo (Optional)</label><br>
+                                {% if patient.profile_picture %}
+                                    <img src="{{ patient.profile_picture.url }}" alt="Patient photo" style="height:80px;width:80px;object-fit:cover;border-radius:6px;margin-bottom:8px;display:block;">
+                                {% endif %}
+                                <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ patient.first_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ patient.last_name }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="text" name="age" class="form-control" value="{{ patient.age }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="M" {% if patient.gender == 'M' %}selected{% endif %}>Male</option>
+                                    <option value="F" {% if patient.gender == 'F' %}selected{% endif %}>Female</option>
+                                    <option value="O" {% if patient.gender == 'O' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control" value="{{ patient.contact_number }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="address" class="form-control" required>{{ patient.address }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Next of Kin Name</label>
+                        <input type="text" name="next_of_kin_name" class="form-control" value="{{ patient.next_of_kin_name }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Next of Kin Relationship</label>
+                                <input type="text" name="next_of_kin_relationship" class="form-control" value="{{ patient.next_of_kin_relationship }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Next of Kin Contact</label>
+                                <input type="text" name="next_of_kin_contact" class="form-control" value="{{ patient.next_of_kin_contact }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Patient File Number</label>
+                                <input type="text" name="patient_file_number" class="form-control" value="{{ patient.patient_file_number }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Family</label>
+                                <select name="family" class="form-control select2">
+                                    <option value="" disabled selected>Select Family</option>
+                                    <option value="None">None</option>
+                                    {% for i in families %}
+                                        <option value="{{ i.id }}"
+                                            {% if i.id == patient.family.id %} selected {% endif %}>
+                                            {{ i.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>File Type</label>
+                                <select name="file_type" id="file_type" class="form-control">
+                                    <option value="" disabled {% if not patient.file_type %}selected{% endif %}>Select File Type</option>
+                                    <option value="Private/Individual" {% if patient.file_type == "Private/Individual" %}selected{% endif %}>Private/Individual</option>
+                                    <option value="NHI" {% if patient.file_type == "NHI" %}selected{% endif %}>NHI</option>
+                                    <option value="Company" {% if patient.file_type == "Company" %}selected{% endif %}>Company</option>
+                                    <option value="Family" {% if patient.file_type == "Family" %}selected{% endif %}>Family</option>
+                                    <option value="NHI - Private" {% if patient.file_type == "NHI - Private" %}selected{% endif %}>NHI - Private</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="hmo-field">
+                            <div class="form-group">
+                                <label>HMO</label>
+                                <select name="hmo" class="form-control select2">
+                                    <option value="" disabled {% if not patient.hmo %}selected{% endif %}>Select HMO</option>
+                                    {% for hmo in hmos %}
+                                        <option value="{{ hmo.id }}" {% if hmo.id == patient.hmo.id %}selected{% endif %}>{{ hmo.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="company-field">
+                            <div class="form-group">
+                                <label>Company</label>
+                                <select name="company" class="form-control select2">
+                                    <option value="" disabled {% if not patient.company %}selected{% endif %}>Select Company</option>
+                                    {% for company in companies %}
+                                        <option value="{{ company.id }}" {% if company.id == patient.company.id %}selected{% endif %}>{{ company.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button class="btn btn-primary" type="submit">Update Patient</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var fileType = document.getElementById('file_type');
+            var hmoField = document.getElementById('hmo-field');
+            var companyField = document.getElementById('company-field');
+
+            function toggleFields() {
+                var value = fileType.value;
+                hmoField.style.display = (value === 'NHI' || value === 'NHI - Private') ? '' : 'none';
+                companyField.style.display = (value === 'Company') ? '' : 'none';
+            }
+
+            fileType.addEventListener('change', toggleFields);
+            toggleFields();
+        });
+    </script>
+{% endblock content %}

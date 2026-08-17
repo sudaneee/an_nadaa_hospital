@@ -1,0 +1,42 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Diagnostic Report Parameters</h4>
+            <a href="{% url 'report_parameter_create' %}" class="btn btn-primary">Add New Parameter</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="table-1">
+                    <thead>
+                        <tr>
+                            <th>Report Type</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for parameter in parameters %}
+                        <tr>
+                            <td>{{ parameter.report_type.name }}</td>
+                            <td>{{ parameter.name }}</td>
+                            <td>{{ parameter.description }}</td>
+                            <td>
+                                <a href="{% url 'report_parameter_update' parameter.pk %}" class="btn btn-warning">Edit</a>
+                                <a href="{% url 'report_parameter_delete' parameter.pk %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this parameter?');">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No parameters available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

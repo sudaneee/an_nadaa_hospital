@@ -1,0 +1,54 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Observation Chart for {{ observation_chart.admission.patient.first_name }} {{ observation_chart.admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="temperature">Temperature (°C)</label>
+                    <input type="number" step="0.1" name="temperature" class="form-control" id="temperature" 
+                           value="{{ observation_chart.temperature }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="pulse">Pulse (bpm)</label>
+                    <input type="text" name="pulse" class="form-control" id="pulse" 
+                           value="{{ observation_chart.pulse }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="respiratory_rate">Respiratory Rate (breaths/min)</label>
+                    <input type="text" name="respiratory_rate" class="form-control" id="respiratory_rate" 
+                           value="{{ observation_chart.respiratory_rate }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="blood_pressure">Blood Pressure (mmHg)</label>
+                    <input type="text" name="blood_pressure" class="form-control" id="blood_pressure" 
+                           value="{{ observation_chart.blood_pressure }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="oxygen_saturation">Oxygen Saturation (%)</label>
+                    <input type="number" step="0.1" name="oxygen_saturation" class="form-control" id="oxygen_saturation" 
+                           value="{{ observation_chart.oxygen_saturation }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="remark">Remark</label>
+                    <textarea name="remark" class="form-control" id="remark">{{ observation_chart.remark }}</textarea>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Update Observation Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

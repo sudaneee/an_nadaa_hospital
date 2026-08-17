@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigation Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-width: 100%;
+            height: auto;
+        }
+        .content {
+            margin: 20px auto;
+            width: 80%;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .patient-table, .investigation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .patient-table th, .investigation-table th, .patient-table td, .investigation-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .patient-table th, .investigation-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+        .investigation-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="{% static 'core/assets/img/hospital_header1.png' %}" alt="Headed Paper">
+</div>
+
+<div class="content">
+    <!-- Patient Information Table -->
+     <h3 style="text-align: center;"> Laboratory Investigation Results </h3>
+    <table class="patient-table">
+        {% if investigation_requests.0.appointment.patient.first_name %}
+            <tr>
+                <th>Patient Name</th>
+                <td>{{ investigation_requests.0.appointment.patient.first_name }} {{ investigation_requests.0.appointment.patient.last_name }}</td>
+            </tr>
+            <tr>
+                <th>File Number</th>
+                <td>{{ investigation_requests.0.appointment.patient.patient_file_number }}</td>
+            </tr>
+            <tr>
+                <th>Age</th>
+                <td>{{ investigation_requests.0.appointment.patient.age}}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ investigation_requests.0.appointment.patient.gender }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <th>Patient Name</th>
+                <td>{{investigation_requests.0.patient_name}}</td>
+            </tr>
+            <tr>
+                <th>Age</th>
+                <td>{{ investigation_requests.0.age }}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ investigation_requests.0.gender }}</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    {% for request in investigation_requests %}
+    <!-- Investigation Result Table -->
+    <div class="investigation">
+        <p class="investigation-title">{{ request.investigation.name }}</p>
+        <table class="investigation-table">
+            <tr>
+                <th>Requested Date</th>
+                <td>{{ request.date_requested|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+                <th>Result</th>
+                <td>
+                    {% if request.investigation.result_type == 'Numeric' %}
+                    {{ request.investigationresult.numeric_result }}
+                    {% elif request.investigation.result_type == 'Reactive/Non-Reactive' %}
+                    {{ request.investigationresult.text_result }}
+                    {% elif request.investigation.result_type == 'Positive/Negative' %}
+                    {{ request.investigationresult.text_result }}
+                    {% elif request.investigation.result_type == 'Text' %}
+                    {{ request.investigationresult.text_result }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Remarks</th>
+                <td>{{ request.investigationresult.remarks }}</td>
+            </tr>
+            <tr>
+                <th>Is Abnormal</th>
+                <td>{{ request.investigationresult.is_abnormal|yesno:"Yes,No" }}</td>
+            </tr>
+        </table>
+    </div>
+    {% empty %}
+    <p>No investigation results available for this invoice.</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

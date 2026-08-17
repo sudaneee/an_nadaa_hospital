@@ -1,0 +1,34 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Process Payment for Invoice #{{ invoice.invoice_number }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Total Amount:</label>
+                    <input type="text" class="form-control" value="{{ invoice.total_amount }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Amount Paid:</label>
+                    <input type="text" class="form-control" name="amount" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method:</label>
+                    <select class="form-control" name="payment_method" required>
+                        <option value="Cash">Cash</option>
+                        <option value="POS">POS</option>
+                        <option value="Bank Transfer">Wallet</option>
+                        <option value="Wallet">Wallet</option>
+                        <option value="Insurance">Insurance</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Process Payment</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

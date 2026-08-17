@@ -1,0 +1,82 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Profile</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                        </div>
+                    </div>
+               
+                    {% if request.user.profile.role == "Admin" %}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select name="role" class="form-control">
+                                <option value="Admin" {% if profile.role == 'Admin' %}selected{% endif %}>Administrator</option>
+                                <option value="Doctor" {% if profile.role == 'Doctor' %}selected{% endif %}>Doctor</option>
+                                <option value="Nurse" {% if profile.role == 'Nurse' %}selected{% endif %}>Nurse</option>
+                                <option value="LabTech" {% if profile.role == 'LabTech' %}selected{% endif %}>Lab Technician</option>
+                                <option value="Pharmacist" {% if profile.role == 'Pharmacist' %}selected{% endif %}>Pharmacist</option>
+                                <option value="PharmacyHead" {% if profile.role == 'PharmacyHead' %}selected{% endif %}>Pharmacy Head</option>
+                                <option value="Receptionist" {% if profile.role == 'Receptionist' %}selected{% endif %}>Receptionist</option>
+                                <option value="Cashier" {% if profile.role == 'Cashier' %}selected{% endif %}>Cashier</option>
+                                <option value="Accountant" {% if profile.role == 'Accountant' %}selected{% endif %}>Accountant</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control" value="{{ profile.contact_number }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" required>{{ profile.address }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            <input type="file" name="profile_picture" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Current Picture</label>
+                            <div>
+                                {% if profile.profile_picture %}
+                                    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" style="max-width: 150px;">
+                                {% else %}
+                                    <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="img-thumbnail" style="max-width: 150px;">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-primary" type="submit">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

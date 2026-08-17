@@ -1,0 +1,134 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Add Prescriptions for {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <!-- Hidden inputs for appointment or admission -->
+                {% if appointment %}
+                    <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                {% elif admission %}
+                    <input type="hidden" name="admission_id" value="{{ admission.id }}">
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="medication-select">Select Medications</label>
+                    <select id="medication-select" class="form-control select2" multiple="multiple">
+                        {% for medication in medications %}
+                            <option value="{{ medication.id }}" data-name="{{ medication.name }}">{{ medication.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Table for Prescriptions -->
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Medication Name</th>
+                            <th>Dosage</th>
+                            <th>Instructions</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prescriptions-table-body">
+                        <!-- Prescription rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Save Prescriptions</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    $('.select2').select2({
+        width: '100%',
+        placeholder: 'Select medications'
+    });
+
+    const addPrescriptionRow = (medicationId, medicationName) => {
+        const tbody = document.getElementById('prescriptions-table-body');
+
+        // Check if the medication is already added
+        if (document.getElementById(`prescription-row-${medicationId}`)) {
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'prescription-row';
+        row.id = `prescription-row-${medicationId}`;
+
+        const nameCell = document.createElement('td');
+        nameCell.innerText = medicationName;
+
+        const dosageCell = document.createElement('td');
+        const dosageInput = document.createElement('input');
+        dosageInput.type = 'text';
+        dosageInput.name = 'dosage';
+        dosageInput.className = 'form-control';
+        dosageCell.appendChild(dosageInput);
+
+        const instructionsCell = document.createElement('td');
+        const instructionsInput = document.createElement('input');
+        instructionsInput.type = 'text';
+        instructionsInput.name = 'instructions';
+        instructionsInput.className = 'form-control';
+        instructionsCell.appendChild(instructionsInput);
+
+        const actionCell = document.createElement('td');
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-danger btn-sm';
+        removeButton.innerText = 'Remove';
+        removeButton.onclick = () => {
+            removePrescriptionRow(medicationId);
+        };
+        actionCell.appendChild(removeButton);
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'medication_id';
+        hiddenInput.value = medicationId;
+
+        row.appendChild(nameCell);
+        row.appendChild(dosageCell);
+        row.appendChild(instructionsCell);
+        row.appendChild(actionCell);
+        row.appendChild(hiddenInput);
+
+        tbody.appendChild(row);
+    };
+
+    const removePrescriptionRow = (medicationId) => {
+        const row = document.getElementById(`prescription-row-${medicationId}`);
+        if (row) {
+            row.remove();
+        }
+    };
+
+    $('#medication-select').on('change', function () {
+        const selectedOptions = $(this).select2('data');
+
+        selectedOptions.forEach(function (option) {
+            const medicationId = option.id;
+            const medicationName = option.text;
+
+            addPrescriptionRow(medicationId, medicationName);
+        });
+    });
+
+    $('#medication-select').on('select2:unselect', function (e) {
+        const deselectedOption = e.params.data;
+        const medicationId = deselectedOption.id;
+        removePrescriptionRow(medicationId);  // Remove row when medication is deselected
+    });
+});
+</script>
+{% endblock content %}

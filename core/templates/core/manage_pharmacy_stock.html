@@ -1,0 +1,69 @@
+{% extends "core/partials/base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Manage Pharmacy Stock</h4>
+            {% if request.user.profile.role == "Admin" or request.user.profile.role == "PharmacyHead" %}
+            <a href="{% url 'pharmacy_stock_form' %}" class="btn btn-primary float-right">Add Stock</a>
+            {% endif %}
+            <h4>Pharmacy Stock Total Worth: {{total_amount}}</h4>
+        </div>
+        <div class="card-body">
+            {% if request.user.profile.role == "Admin" or request.user.profile.role == "PharmacyHead" %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Upload Excel File</label>
+                    <input type="file" name="upload_file" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-secondary">Upload</button>
+            </form>
+            {% endif %}
+            <table class="table table-stripped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Unit Price (₦)</th>
+                        <th>Amount (₦)</th>
+                        <th>Created on</th>
+                        <th>Created by</th>
+                        <th>Updated on</th>
+                        <th>Updated by</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in pharmacy_stock %}
+                    <tr>
+                        <td>{{ stock.medication.name }}</td>
+                        <td>{{ stock.quantity }}</td>
+                        <td>{{ stock.unit }}</td>
+                        <td>{{ stock.unit_price|add_commas  }}</td>
+                        <td>{{ stock.amount|add_commas }}</td>
+
+                        <td>{{ stock.created_at }}</td>
+                        <td>{{ stock.created_by }}</td>
+                        <td>{{ stock.updated_at }}</td>
+                        <td>{{ stock.updated_by }}</td>
+                        <td>
+                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "PharmacyHead" %}
+                            <a href="{% url 'pharmacy_stock_update' stock.id %}" class="btn btn-warning">Edit</a>
+                            <a href="{% url 'pharmacy_stock_delete' stock.id %}" class="btn btn-danger"  onclick="return confirm('Are you sure you want to delete this stock item?');">Delete</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No stock available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

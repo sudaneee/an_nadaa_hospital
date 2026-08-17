@@ -1,0 +1,42 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{% if item %}Update{% else %}Create{% endif %} Inventory Item</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Item Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ item.name|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select class="form-control select2" id="category" name="category" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if item and item.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" value="{{ item.quantity|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit_price">Unit Price</label>
+                    <input type="number" step="0.01" class="form-control" id="unit_price" name="unit_price" value="{{ item.unit_price|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="reorder_level">Reorder Level</label>
+                    <input type="number" class="form-control" id="reorder_level" name="reorder_level" value="{{ item.reorder_level|default:'' }}" required>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">{% if item %}Update{% else %}Create{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

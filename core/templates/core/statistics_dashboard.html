@@ -1,0 +1,312 @@
+{% extends "core/partials/base.html" %}
+{% load static humanize %}
+{% block content %}
+<div class="main-content mt-5">
+  <div class="section-header d-flex justify-content-between align-items-center flex-wrap mb-3">
+    <h1>Statistics Dashboard</h1>
+    <div class="d-flex align-items-center flex-wrap" style="gap:.5rem;">
+      <form method="GET" class="form-inline">
+        <label class="mr-1 mb-0">From</label>
+        <input type="date" name="start_date" class="form-control form-control-sm mr-2" value="{{ start_date|date:'Y-m-d' }}">
+        <label class="mr-1 mb-0">To</label>
+        <input type="date" name="end_date" class="form-control form-control-sm mr-2" value="{{ end_date|date:'Y-m-d' }}">
+        {% include 'core/partials/_date_quick_filters.html' %}
+        <button type="submit" class="btn btn-sm btn-primary mr-2">Filter</button>
+        <a href="?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}&export=excel"
+           class="btn btn-sm btn-success">Export to Excel</a>
+      </form>
+    </div>
+  </div>
+
+  <div class="section-body">
+
+    <!-- KPI tiles -->
+    <div class="row">
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#2a78d6;">{{ new_patients }}</div>
+            <div class="text-muted small mt-1">New Patients</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#eb6834;">{{ admissions_count }}</div>
+            <div class="text-muted small mt-1">Admissions</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#1baf7a;">₦{{ total_collected|floatformat:0|intcomma }}</div>
+            <div class="text-muted small mt-1">Total Collected</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#eda100;">₦{{ net_collected|floatformat:0|intcomma }}</div>
+            <div class="text-muted small mt-1">Net Collected</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#e34948;">₦{{ outstanding_balance|floatformat:0|intcomma }}</div>
+            <div class="text-muted small mt-1">Outstanding Balance</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card text-center py-2">
+          <div class="card-body p-1">
+            <div style="font-size:1.1rem;font-weight:700;color:#e87ba4;">{{ out_of_stock_count }}</div>
+            <div class="text-muted small mt-1">Out of Stock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Revenue Trend -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header"><h4>Daily Collections (₦)</h4></div>
+          <div class="card-body"><div id="chart-daily"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gender + File Type -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>Patient Gender</h4></div>
+          <div class="card-body"><div id="chart-gender"></div></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>File Type Breakdown</h4></div>
+          <div class="card-body"><div id="chart-filetype"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointment Status + Investigation Status -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>Appointment Status</h4></div>
+          <div class="card-body"><div id="chart-appt"></div></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>Investigation Status</h4></div>
+          <div class="card-body"><div id="chart-inv"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Diagnoses + Top Medications -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>Top Diagnoses</h4></div>
+          <div class="card-body"><div id="chart-diag"></div></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><h4>Top Medications Dispensed (Qty)</h4></div>
+          <div class="card-body"><div id="chart-meds"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods + Top Cashiers -->
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header"><h4>Payment Methods</h4></div>
+          <div class="card-body"><div id="chart-methods"></div></div>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header"><h4>Top Cashiers by Collections (₦)</h4></div>
+          <div class="card-body"><div id="chart-cashiers"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Doctors -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header"><h4>Top Doctors by Appointments</h4></div>
+          <div class="card-body"><div id="chart-doctors"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  var raw = {{ chart_data|safe }};
+
+  var PALETTE = ['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#008300','#4a3aa7','#e34948'];
+  function slicePalette(n) {
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(PALETTE[i % PALETTE.length]);
+    return out;
+  }
+
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    || (!document.documentElement.getAttribute('data-theme')
+        && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var textColor = isDark ? '#ffffff' : '#0b0b0b';
+  var gridColor = isDark ? '#2c2c2a' : '#e1e0d9';
+
+  var baseChart = {
+    toolbar: { show: false },
+    fontFamily: 'system-ui,-apple-system,"Segoe UI",sans-serif',
+    foreColor: textColor,
+    animations: { enabled: false },
+  };
+
+  function noData(elId, msg) {
+    var el = document.getElementById(elId);
+    if (el) el.innerHTML = '<p class="text-muted p-3 mb-0">' + (msg || 'No data for this period.') + '</p>';
+  }
+
+  function hBar(elId, categories, values, color) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    if (!categories.length) { noData(elId); return; }
+    new ApexCharts(el, {
+      chart: Object.assign({}, baseChart, { type: 'bar', height: Math.max(200, categories.length * 36 + 60) }),
+      plotOptions: { bar: { horizontal: true, borderRadius: 3 } },
+      series: [{ name: 'Value', data: values }],
+      xaxis: { categories: categories },
+      colors: [color || PALETTE[0]],
+      dataLabels: { enabled: true, offsetX: 6, style: { colors: [textColor], fontSize: '11px' } },
+      grid: { borderColor: gridColor },
+      tooltip: { theme: isDark ? 'dark' : 'light' },
+    }).render();
+  }
+
+  function donut(elId, labels, values) {
+    var el = document.getElementById(elId);
+    if (!el) return;
+    if (!labels.length) { noData(elId); return; }
+    new ApexCharts(el, {
+      chart: Object.assign({}, baseChart, { type: 'donut', height: 280 }),
+      series: values,
+      labels: labels,
+      colors: slicePalette(labels.length),
+      legend: { position: 'bottom', fontSize: '12px' },
+      dataLabels: { enabled: true },
+      tooltip: { theme: isDark ? 'dark' : 'light' },
+    }).render();
+  }
+
+  /* Daily collections — area line */
+  (function () {
+    var el = document.getElementById('chart-daily');
+    if (!el) return;
+    if (!raw.daily.length) { noData('chart-daily'); return; }
+    new ApexCharts(el, {
+      chart: Object.assign({}, baseChart, { type: 'area', height: 260, zoom: { enabled: false } }),
+      series: [{ name: 'Collections (₦)', data: raw.daily.map(function (d) { return d.total; }) }],
+      xaxis: { categories: raw.daily.map(function (d) { return d.date; }),
+               labels: { rotate: -30, style: { fontSize: '11px' } } },
+      colors: [PALETTE[0]],
+      fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.03 } },
+      stroke: { width: 2, curve: 'smooth' },
+      dataLabels: { enabled: false },
+      yaxis: { labels: { formatter: function (v) { return '₦' + v.toLocaleString(); } } },
+      grid: { borderColor: gridColor },
+      tooltip: { theme: isDark ? 'dark' : 'light',
+                 y: { formatter: function (v) { return '₦' + v.toLocaleString(); } } },
+    }).render();
+  })();
+
+  /* Gender donut */
+  donut('chart-gender',
+    raw.gender.map(function (g) { return g.label; }),
+    raw.gender.map(function (g) { return g.count; }));
+
+  /* File type donut */
+  donut('chart-filetype',
+    raw.file_type.map(function (f) { return f.label; }),
+    raw.file_type.map(function (f) { return f.count; }));
+
+  /* Appointment status */
+  hBar('chart-appt',
+    raw.appt_status.map(function (a) { return a.label; }),
+    raw.appt_status.map(function (a) { return a.count; }),
+    PALETTE[2]);
+
+  /* Investigation status */
+  hBar('chart-inv',
+    raw.inv_status.map(function (i) { return i.label; }),
+    raw.inv_status.map(function (i) { return i.count; }),
+    PALETTE[3]);
+
+  /* Top diagnoses */
+  hBar('chart-diag',
+    raw.top_diagnoses.map(function (d) { return d.label; }),
+    raw.top_diagnoses.map(function (d) { return d.count; }),
+    PALETTE[4]);
+
+  /* Top medications */
+  hBar('chart-meds',
+    raw.top_meds.map(function (m) { return m.label; }),
+    raw.top_meds.map(function (m) { return m.qty; }),
+    PALETTE[1]);
+
+  /* Payment methods donut */
+  donut('chart-methods',
+    raw.payment_methods.map(function (p) { return p.label; }),
+    raw.payment_methods.map(function (p) { return p.total; }));
+
+  /* Top cashiers — column bar */
+  (function () {
+    var el = document.getElementById('chart-cashiers');
+    if (!el) return;
+    if (!raw.top_cashiers.length) { noData('chart-cashiers'); return; }
+    new ApexCharts(el, {
+      chart: Object.assign({}, baseChart, { type: 'bar', height: 280 }),
+      plotOptions: { bar: { borderRadius: 3, columnWidth: '55%' } },
+      series: [{ name: 'Collections (₦)', data: raw.top_cashiers.map(function (c) { return c.total; }) }],
+      xaxis: { categories: raw.top_cashiers.map(function (c) { return c.label; }),
+               labels: { style: { fontSize: '11px' } } },
+      colors: [PALETTE[0]],
+      dataLabels: { enabled: false },
+      yaxis: { labels: { formatter: function (v) { return '₦' + v.toLocaleString(); } } },
+      grid: { borderColor: gridColor },
+      tooltip: { theme: isDark ? 'dark' : 'light',
+                 y: { formatter: function (v) { return '₦' + v.toLocaleString(); } } },
+    }).render();
+  })();
+
+  /* Top doctors */
+  hBar('chart-doctors',
+    raw.top_doctors.map(function (d) { return d.label; }),
+    raw.top_doctors.map(function (d) { return d.count; }),
+    PALETTE[6]);
+
+})();
+</script>
+{% endblock extra_scripts %}

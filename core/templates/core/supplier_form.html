@@ -1,0 +1,36 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{% if supplier %}Edit{% else %}Add{% endif %} Supplier</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" class="form-control" value="{% if supplier %}{{ supplier.name }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Name</label>
+                    <input type="text" name="contact_name" class="form-control" value="{% if supplier %}{{ supplier.contact_name }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Phone</label>
+                    <input type="text" name="contact_phone" class="form-control" value="{% if supplier %}{{ supplier.contact_phone }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" name="contact_email" class="form-control" value="{% if supplier %}{{ supplier.contact_email }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" class="form-control" required>{% if supplier %}{{ supplier.address }}{% endif %}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">{% if supplier %}Update{% else %}Add{% endif %} Supplier</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

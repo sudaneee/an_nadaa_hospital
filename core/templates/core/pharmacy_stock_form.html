@@ -1,0 +1,148 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Add Multiple Pharmacy Stock</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <!-- Medication Selection -->
+                <div class="form-group">
+                    <label for="medication-select">Select Medications</label>
+                    <select id="medication-select" class="form-control select2" multiple="multiple">
+                        {% for medication in medications %}
+                            <option value="{{ medication.id }}" data-name="{{ medication.name }}">{{ medication.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Table for Stock Entries -->
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Medication Name</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Unit Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-entries-table-body">
+                        <!-- Stock entries will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-primary mt-3">Submit Stocks</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: 'Select medications'
+        });
+    
+        const addStockEntryRow = (medicationId, medicationName) => {
+            const tbody = document.getElementById('stock-entries-table-body');
+
+            // Check if the medication is already added
+            if (document.getElementById(`stock-row-${medicationId}`)) {
+                return;
+            }
+    
+            const row = document.createElement('tr');
+            row.className = 'stock-entry-row';
+            row.id = `stock-row-${medicationId}`;
+    
+            const nameCell = document.createElement('td');
+            nameCell.innerText = medicationName;
+
+            // Quantity Cell
+            const quantityCell = document.createElement('td');
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.name = 'quantities[]';  // Using array notation
+            quantityInput.value = '1';
+            quantityInput.min = '1';
+            quantityInput.className = 'form-control';
+            quantityInput.dataset.medicationId = medicationId;
+            quantityCell.appendChild(quantityInput);
+
+            // Unit Selection Cell
+            const unitCell = document.createElement('td');
+            const unitSelect = document.createElement('select');
+            unitSelect.name = 'units[]';  // Using array notation
+            unitSelect.className = 'form-control';
+            unitSelect.dataset.medicationId = medicationId;
+
+            // Predefined unit options
+            const units = ['Tablets', 'Capsule', 'Ample', 'Bottle', 'pcs', 'Pack', 'Vial', 'Card'];  // Add your units here
+            units.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit;
+                option.innerText = unit;
+                unitSelect.appendChild(option);
+            });
+
+            unitCell.appendChild(unitSelect);  // Append the select element to the cell
+
+            // Unit Price Cell
+            const priceCell = document.createElement('td');  // Create a new cell for unit price
+            const priceInput = document.createElement('input');
+            priceInput.type = 'number';  // Make it a number input
+            priceInput.name = 'unit_prices[]';  // Using array notation for unit prices
+            priceInput.className = 'form-control';
+            priceInput.placeholder = 'Unit Price';  // Placeholder for clarity
+            priceInput.dataset.medicationId = medicationId;  // Keep the medication ID
+            priceCell.appendChild(priceInput);
+
+            // Hidden Input for Medication ID
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'medications[]';  // Array notation for medication IDs
+            hiddenInput.value = medicationId;
+    
+            row.appendChild(nameCell);
+            row.appendChild(quantityCell);
+            row.appendChild(unitCell);  // Append the unit selection cell to the row
+            row.appendChild(priceCell);  // Append the price cell to the row
+            row.appendChild(hiddenInput);
+    
+            tbody.appendChild(row);
+        };
+    
+        const removeStockEntryRow = (medicationId) => {
+            const row = document.getElementById(`stock-row-${medicationId}`);
+            if (row) {
+                row.remove();
+            }
+        };
+    
+        $('#medication-select').on('change', function () {
+            const selectedOptions = $(this).select2('data');
+    
+            selectedOptions.forEach(function (option) {
+                const medicationId = option.id;
+                const medicationName = option.text;
+    
+                addStockEntryRow(medicationId, medicationName);
+            });
+        });
+    
+        $('#medication-select').on('select2:unselect', function (e) {
+            const deselectedOption = e.params.data;
+            const medicationId = deselectedOption.id;
+            removeStockEntryRow(medicationId);
+        });
+    });
+</script>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+{% endblock content %}

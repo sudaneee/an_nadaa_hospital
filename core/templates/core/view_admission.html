@@ -1,0 +1,195 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Admission Details</h4>
+        </div>
+        <div class="card-body">
+            <h5>Patient Information</h5>
+            <p><strong>Name:</strong> {{ admission.patient.first_name }} {{ admission.patient.last_name }}</p>
+            <p><strong>File Number:</strong> {{ admission.patient.patient_file_number }}</p>
+            <p><strong>Admission Date:</strong> {{ admission.admission_date|date:"Y-m-d H:i" }}</p>
+            <p><strong>Reason:</strong> {{ admission.reason }}</p>
+            <p><strong>Status:</strong> {{ admission.status }}</p>
+
+            <hr>
+
+            <!-- Other sections remain unchanged... -->
+
+            <h5>Observation Chart</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date & Time Recorded</th>
+                        <th>Temperature (°C)</th>
+                        <th>Pulse (bpm)</th>
+                        <th>Respiratory Rate (breaths/min)</th>
+                        <th>Blood Pressure (mmHg)</th>
+                        <th>Oxygen Saturation (%)</th>
+                        <th>Remarks</th>
+                        <th>Recorded By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for observation in observation_charts %}
+                    <tr>
+                        <td>{{ observation.recorded_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ observation.temperature }}</td>
+                        <td>{{ observation.pulse }}</td>
+                        <td>{{ observation.respiratory_rate }}</td>
+                        <td>{{ observation.blood_pressure }}</td>
+                        <td>{{ observation.oxygen_saturation }}</td>
+                        <td>{{ observation.remark }}</td>
+                        <td>{{ observation.recorded_by }}</td>
+                        <td>
+                            <a href="{% url 'update_observation_chart' observation.id %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'delete_observation_chart' observation.id %}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to delete this observation chart?');">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No observation charts available for this admission.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Fluid Chart</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th colspan='4'>Intake</th>
+                        <th colspan='4'>Output</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tr>
+                        <th>Date & Time Recorded</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Route</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Remarks</th>
+                        <th>Recorded By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fluid_chart in fluid_charts %}
+                    <tr>
+                        <td>{{ fluid_chart.recorded_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ fluid_chart.intake_type }}</td>
+                        <td>{{ fluid_chart.intake_amount }}</td>
+                        <td>{{ fluid_chart.intake_route }}</td>
+                        <td>{{ fluid_chart.output_type }}</td>
+                        <td>{{ fluid_chart.output_amount }}</td>
+                        <td>{{ fluid_chart.output_remark }}</td>
+                        <td>{{ fluid_chart.recorded_by }}</td>
+                        <td>
+                            <a href="{% url 'update_fluid_chart' fluid_chart.id %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'delete_fluid_chart' fluid_chart.id %}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to delete this fluid chart?');">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No Fluid charts available for this admission.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Seizure Chart</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date & Time Recorded</th>
+                        <th>Duration</th>
+                        <th>Description</th>
+                        <th>Recorded By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for seizure in seizure_charts %}
+                    <tr>
+                        <td>{{ seizure.recorded_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ seizure.duration }}</td>
+                        <td>{{ seizure.description }}</td>
+                        <td>{{ seizure.recorded_by }}</td>
+                        <td>
+                            <a href="{% url 'update_seizure_chart' seizure.id %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'delete_seizure_chart' seizure.id %}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to delete this seizure chart?');">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No seizure charts available for this admission.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Down's Score Chart</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date & Time Recorded</th>
+                        <th>Respiratory Rate</th>
+                        <th>Cyanosis</th>
+                        <th>Retraction</th>
+                        <th>Grunting</th>
+                        <th>Air Entry</th>
+                        <th>Total</th>
+                        <th>Recorded By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for downscore in down_score_charts %}
+                    <tr>
+                        <td>{{ downscore.recorded_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ downscore.respiratory_rate }}</td>
+                        <td>{{ downscore.cyanosis }}</td>
+                        <td>{{ downscore.retraction }}</td>
+                        <td>{{ downscore.grunting }}</td>
+                        <td>{{ downscore.air_entry }}</td>
+                        <td>{{ downscore.total }}</td>
+                        <td>{{ downscore.recorded_by }}</td>
+                        <td>
+                            <a href="{% url 'update_down_score_chart' downscore.id %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'delete_down_score_chart' downscore.id %}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to delete this Down\'s score chart?');">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No Down's score charts available for this admission.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Admission Status</h5>
+            {% if admission %}
+            <p><strong>Admission Date:</strong> {{ admission.admission_date }}</p>
+            <p><strong>Discharge Date:</strong> {{ admission.discharge_date|default:"Not yet discharged" }}</p>
+            <p><strong>Reason for Admission:</strong> {{ admission.reason }}</p>
+            {% else %}
+            <p>The patient is not currently admitted.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

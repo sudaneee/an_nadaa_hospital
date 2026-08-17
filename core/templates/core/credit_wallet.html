@@ -1,0 +1,54 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Credit Wallet</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="wallet">Select Wallet</label>
+                    <select id="wallet" name="wallet" class="form-control select2">
+                        <option value="">-- Select Wallet --</option>
+                        {% for wallet in wallets %}
+                        <option value="{{ wallet.id }}">
+                            {% if wallet.family %}
+                                Family: {{ wallet.family.name }} - ₦{{ wallet.balance|floatformat:2|intcomma }} [{{ wallet.family.file_number }}]
+                            {% elif wallet.patient %}
+                                Patient: {{ wallet.patient.first_name }} {{ wallet.patient.last_name }} - ₦{{ wallet.balance|floatformat:2|intcomma }} [{{ wallet.patient.patient_file_number }}]
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount to Credit (₦)</label>
+                    <input type="number" id="amount" name="amount" class="form-control" step="0.01" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transaction_method">Transaction Method</label>
+                    <select id="transaction_method" name="transaction_method" class="form-control" required>
+                        <option value="">-- Select Transaction Method --</option>
+                        <option value="Cash">Cash</option>
+                        <option value="POS">POS</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Wallet">Wallet</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" id="description" name="description" class="form-control" placeholder="Enter description (optional)">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Credit Wallet</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

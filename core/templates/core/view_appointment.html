@@ -1,0 +1,362 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Appointment Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h5 class="mb-1">Patient Information</h5>
+                    <p class="mb-1"><strong>Name:</strong> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</p>
+                    <p class="mb-1"><strong>Age:</strong> {{ appointment.patient.age }}</p>
+                    <p class="mb-1"><strong>File Number:</strong> {{ appointment.patient.patient_file_number }}</p>
+                    <p class="mb-1"><strong>Appointment Date:</strong> {{ appointment.appointment_date|date:"Y-m-d H:i" }}</p>
+                    <p class="mb-1"><strong>Reason:</strong> {{ appointment.reason }}</p>
+                    <p class="mb-1"><strong>Status:</strong> <span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span></p>
+                </div>
+                <div class="d-flex flex-wrap" style="gap:.4rem;">
+                    {% if appointment.status == 'Scheduled' %}
+                    <a href="{% url 'add_prescription' appointment.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-prescription-bottle-alt"></i> Prescription
+                    </a>
+                    <a href="{% url 'create_investigation_request' appointment.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-vials"></i> Investigation
+                    </a>
+                    <a href="{% url 'create_admission' appointment.id %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-procedures"></i> Admission
+                    </a>
+                    <a href="{% url 'view_appointment_notes' appointment.id %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-notes-medical"></i> Notes
+                    </a>
+                    <a href="{% url 'create_diagnosis_appointment' appointment.id %}" class="btn btn-dark btn-sm">
+                        <i class="fas fa-notes-medical"></i> Diagnoses
+                    </a>
+                    {% endif %}
+                    {% if appointment.status != 'Completed' %}
+                    <a href="{% url 'complete_appointment' appointment.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-check"></i> Complete
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Doctor's Notes</h5>
+                    {% if doctor_notes %}
+                        {% for note in doctor_notes %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p>{{ note.note|linebreaksbr }}</p>
+                                <p><small>Written by Dr. {{ note.doctor.username }} on {{ note.created_at|date:"Y-m-d H:i" }}</small></p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p>No notes available for this appointment.</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h5>Diagnosis</h5>
+                    {% if diagnoses %}
+                        {% for diagnosis in diagnoses %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p>{{ diagnosis.name }}</p>
+                                <p><small>Diagnosed by Dr. {{ diagnosis.doctor.username }} on {{ diagnosis.created_at|date:"Y-m-d H:i" }}</small></p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p>No diagnoses available for this appointment.</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <h5>Vital Signs</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Height</th>
+                        <th>Weight</th>
+                        <th>Blood Pressure</th>
+                        <th>Temperature</th>
+                        <th>Pulse</th>
+                        <th>Respiratory Rate</th>
+                        <th>Oxygen Saturation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vital_sign in vital_signs %}
+                    <tr>
+                        <td>{{ vital_sign.height }}</td>
+                        <td>{{ vital_sign.weight }}</td>
+                        <td>{{ vital_sign.blood_pressure }}</td>
+                        <td>{{ vital_sign.temperature }}</td>
+                        <td>{{ vital_sign.pulse }}</td>
+                        <td>{{ vital_sign.respiratory_rate }}</td>
+                        <td>{{ vital_sign.oxygen_saturation }}</td>
+                        <td>
+                            <a href="{% url 'update_vital_sign' appointment.id vital_sign.id %}" class="btn btn-warning btn-sm">Edit Vital Signs</a>
+                            <a href="{% url 'delete_vital_sign' appointment.id vital_sign.id %}" class="btn btn-danger btn-sm" 
+                               onclick="return confirm('Are you sure you want to delete these vital signs?');">Delete Vital Signs</a>
+                        </td>
+                        
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No vital signs available for this appointment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Prescriptions</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Instructions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prescription in prescriptions %}
+                    <tr>
+                        <td>{{ prescription.medication.name }}</td>
+                        <td>{{ prescription.dosage }}</td>
+                        <td>{{ prescription.instructions }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No prescriptions available for this appointment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Investigation Requests</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Investigation</th>
+                        <th>Details</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investigation in investigation_requests %}
+                    <tr>
+                        <td>{{ investigation.investigation.name }}</td>
+                        <td>{{ investigation.details }}</td>
+                        <td>
+                            {% if investigation.investigationresult %}
+                                {% if investigation.investigation.result_type == 'Numeric' %}
+                                <p><strong>Result:</strong> {{ investigation.investigationresult.numeric_result }}</p>
+                                {% elif investigation.investigation.result_type == 'Reactive/Non-Reactive' %}
+                                <p><strong>Result:</strong> {{ investigation.investigationresult.text_result }}</p>
+                                {% elif investigation.investigation.result_type == 'Positive/Negative' %}
+                                <p><strong>Result:</strong> {{ investigation.investigationresult.text_result }}</p>
+                                {% elif investigation.investigation.result_type == 'Text' %}
+                                <p><strong>Result:</strong> {{ investigation.investigationresult.text_result }}</p>
+                                {% endif %}
+                                <p><strong>Remarks:</strong> {{ investigation.investigationresult.remarks }}</p>
+                                <p><strong>Is Abnormal:</strong> {{ investigation.investigationresult.is_abnormal|yesno:"Yes,No" }}</p>
+                            {% else %}
+                            <span>No result available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No investigation requests available for this appointment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>Admission Status</h5>
+            {% if admission %}
+            <p><strong>Admission Date:</strong> {{ admission.admission_date }}</p>
+            <p><strong>Discharge Date:</strong> {{ admission.discharge_date|default:"Not yet discharged" }}</p>
+            <p><strong>Reason for Admission:</strong> {{ admission.reason }}</p>
+            {% else %}
+            <p>The patient is not currently admitted.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Patient History</h4>
+            <small class="text-muted">Records from this patient's previous appointments and admissions</small>
+        </div>
+        <div class="card-body">
+
+            <h5>Previous Doctor's Notes</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Note</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>From</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for note in history_doctor_notes %}
+                    <tr>
+                        <td>{{ note.note }}</td>
+                        <td>Dr. {{ note.doctor.username }}</td>
+                        <td>{{ note.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if note.appointment %}Appointment{% elif note.admission %}Admission{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No previous doctor's notes on record.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5>Previous Diagnoses</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Diagnosis</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>From</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for diagnosis in history_diagnoses %}
+                    <tr>
+                        <td>{{ diagnosis.name }}</td>
+                        <td>Dr. {{ diagnosis.doctor.username }}</td>
+                        <td>{{ diagnosis.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if diagnosis.appointment %}Appointment{% elif diagnosis.admission %}Admission{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No previous diagnoses on record.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5>Previous Medications</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Instructions</th>
+                        <th>Date Prescribed</th>
+                        <th>From</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prescription in history_prescriptions %}
+                    <tr>
+                        <td>{{ prescription.medication.name }}</td>
+                        <td>{{ prescription.dosage }}</td>
+                        <td>{{ prescription.instructions }}</td>
+                        <td>{{ prescription.date_prescribed|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if prescription.appointment %}Appointment{% elif prescription.admission %}Admission{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No previous medications on record.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5>Previous Investigations</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Investigation</th>
+                        <th>Status</th>
+                        <th>Date Requested</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investigation in history_investigation_requests %}
+                    <tr>
+                        <td>{{ investigation.investigation.name }}</td>
+                        <td>{{ investigation.status }}</td>
+                        <td>{{ investigation.date_requested|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if investigation.investigationresult %}
+                                {% if investigation.investigation.result_type == 'Numeric' %}
+                                    {{ investigation.investigationresult.numeric_result }}
+                                {% else %}
+                                    {{ investigation.investigationresult.text_result }}
+                                {% endif %}
+                            {% else %}
+                                <span>No result available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No previous investigations on record.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5>Previous Admissions</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Admission Date</th>
+                        <th>Discharge Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Ward</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for past_admission in history_admissions %}
+                    <tr>
+                        <td>{{ past_admission.admission_date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ past_admission.discharge_date|default:"Not yet discharged" }}</td>
+                        <td>{{ past_admission.reason }}</td>
+                        <td>{{ past_admission.status }}</td>
+                        <td>{{ past_admission.ward|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No previous admissions on record.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}

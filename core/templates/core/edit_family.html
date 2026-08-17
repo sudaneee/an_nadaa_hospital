@@ -1,0 +1,34 @@
+<!-- templates/edit_family.html -->
+{% extends "core/partials/base.html" %} <!-- or your base template -->
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Edit Family</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ family.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="file_number">File Number</label>
+                    <input type="text" id="file_number" name="file_number" class="form-control" value="{{ family.file_number }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" class="form-control">{{ family.address }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control" value="{{ family.phone_number }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Family</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

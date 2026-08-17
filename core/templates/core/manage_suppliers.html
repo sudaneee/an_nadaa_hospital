@@ -1,0 +1,51 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Manage Suppliers</h4>
+            <a href="{% url 'supplier_form' %}" class="btn btn-primary float-right">Add Supplier</a>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Upload Excel File</label>
+                    <input type="file" name="upload_file" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-secondary">Upload</button>
+            </form>
+            <table class="table table-stripped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact Name</th>
+                        <th>Contact Phone</th>
+                        <th>Contact Email</th>
+                        <th>Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td>{{ supplier.name }}</td>
+                        <td>{{ supplier.contact_name }}</td>
+                        <td>{{ supplier.contact_phone }}</td>
+                        <td>{{ supplier.contact_email }}</td>
+                        <td>{{ supplier.address }}</td>
+                        <td>
+                            <a href="{% url 'supplier_form' supplier.id %}" class="btn btn-warning">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No suppliers available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

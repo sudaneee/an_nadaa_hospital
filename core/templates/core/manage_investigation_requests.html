@@ -1,0 +1,56 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Manage Investigation Requests</h4>
+
+            <!-- Date range filter -->
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group mr-2">
+                    <label class="mr-1">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label class="mr-1">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <h5>Pending Investigation Requests</h5>
+            <table class="table table-striped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Patient Name</th>
+                        <th>Investigation</th>
+                        <th>Requested Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in pending_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{% if request.patient %} {{ request.patient.first_name }} {{ request.patient.last_name }} [{{ request.patient.patient_file_number }}] {% else %} {{ request.patient_name }} {% endif %}</td>
+                        <td>{{ request.investigation.name }}</td>
+                        <td>{{ request.date_requested }}</td>
+                        <td>
+                            <a href="{% url 'delete_investigation_request' request.id %}" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No pending investigation requests at the moment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'create_investigation_request' %}" class="btn btn-primary">Create New Request</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

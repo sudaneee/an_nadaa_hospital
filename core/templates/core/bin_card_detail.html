@@ -1,0 +1,83 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Bin Card: {{ medication.name }}</h4>
+            <div>
+                <a href="?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}&export=excel"
+                   class="btn btn-success mr-2">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </a>
+                <a href="{% url 'bin_card_list' %}" class="btn btn-secondary">Back to Bin Cards</a>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group mr-2">
+                    <label class="mr-1">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label class="mr-1">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <strong>Current Stock on Hand:</strong> {{ current_total }} units
+                </div>
+                <div class="col-md-4">
+                    <strong>Current Stock Value:</strong> &#8358;{{ current_stock_value|floatformat:2|intcomma }}
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped" id="table-1">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Batch No.</th>
+                            <th>Transaction</th>
+                            <th>Qty In</th>
+                            <th>Qty In Value (&#8358;)</th>
+                            <th>Qty Out</th>
+                            <th>Qty Out Value (&#8358;)</th>
+                            <th>Patient File No.</th>
+                            <th>Balance (Qty)</th>
+                            <th>Balance Value (&#8358;)</th>
+                            <th>Recorded By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                        <tr {% if entry.transaction_type == 'Opening Balance' %}class="table-info font-weight-bold"{% endif %}>
+                            <td>{{ entry.date|date:"Y-m-d" }}</td>
+                            <td>{{ entry.batch_number|default:"-" }}</td>
+                            <td>{{ entry.transaction_type }}</td>
+                            <td>{% if entry.qty_in %}{{ entry.qty_in }}{% else %}-{% endif %}</td>
+                            <td>{% if entry.qty_in %}{{ entry.qty_in_value|floatformat:2|intcomma }}{% else %}-{% endif %}</td>
+                            <td>{% if entry.qty_out %}{{ entry.qty_out }}{% else %}-{% endif %}</td>
+                            <td>{% if entry.qty_out %}{{ entry.qty_out_value|floatformat:2|intcomma }}{% else %}-{% endif %}</td>
+                            <td>{% if entry.patient %}{{ entry.patient.patient_file_number }}{% else %}-{% endif %}</td>
+                            <td><strong>{{ entry.balance }}</strong></td>
+                            <td><strong>{{ entry.balance_value|floatformat:2|intcomma }}</strong></td>
+                            <td>{{ entry.recorded_by|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center">No stock movements recorded for this period.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

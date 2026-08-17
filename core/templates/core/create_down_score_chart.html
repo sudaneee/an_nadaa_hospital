@@ -1,0 +1,66 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Down's Score Chart for {{ admission.patient.first_name }} {{ admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="respiratory_rate">Respiratory Rate</label>
+                    <select name="respiratory_rate" class="form-control" id="respiratory_rate">
+                        <option value="0">< 60 (0)</option>
+                        <option value="1">60-80 (1)</option>
+                        <option value="2">> 80 (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cyanosis">Cyanosis</label>
+                    <select name="cyanosis" class="form-control" id="cyanosis">
+                        <option value="0">None (0)</option>
+                        <option value="1">At Room Air (1)</option>
+                        <option value="2">With 40% O2 (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="retraction">Retraction</label>
+                    <select name="retraction" class="form-control" id="retraction">
+                        <option value="0">None (0)</option>
+                        <option value="1">Mild (1)</option>
+                        <option value="2">Moderate-Severe (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="grunting">Grunting</label>
+                    <select name="grunting" class="form-control" id="grunting">
+                        <option value="0">None (0)</option>
+                        <option value="1">Audible with Stethoscope (1)</option>
+                        <option value="2">Audible without Stethoscope (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="air_entry">Air Entry</label>
+                    <select name="air_entry" class="form-control" id="air_entry">
+                        <option value="0">Clear (0)</option>
+                        <option value="1">Decreased (1)</option>
+                        <option value="2">Barely Audible (2)</option>
+                    </select>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Down's Score Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

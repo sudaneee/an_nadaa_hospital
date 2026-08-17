@@ -1,0 +1,30 @@
+# Virtual environment
+myenv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+db.sqlite3
+db.sqlite3.bak_*
+db.lite3
+media/
+staticfiles/
+static/
+
+# Stray/legacy artifact (not the real MEDIA_ROOT, which is media/profile_pictures)
+/profile_pictures/
+
+# Backup / export archives
+*.zip
+
+# Editor/OS cruft
+.vscode/
+.idea/
+*.log
+Thumbs.db
+.DS_Store

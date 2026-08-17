@@ -1,0 +1,54 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Fluid Chart for {{ admission.patient.first_name }} {{ admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="card-header">
+                    <h5>Intake</h5>
+                </div>
+   
+                <div class="form-group">
+                    <label for="intake_type">Type</label>
+                    <input type="text" name="intake_type" class="form-control" id="intake_type" placeholder="Enter Type">
+                </div>
+                <div class="form-group">
+                    <label for="intake_amount">Amount</label>
+                    <input type="text" name="intake_amount" class="form-control" id="intake_amount" placeholder="Enter Amount">
+                </div>
+                <div class="form-group">
+                    <label for="intake_route">Route</label>
+                    <input type="text" name="intake_route" class="form-control" id="intake_route" placeholder="Enter Route">
+                </div>
+
+                <div class="card-header">
+                    <h5>Output</h5>
+                </div>
+
+                <div class="form-group">
+                    <label for="output_type">Type</label>
+                    <input type="text" name="output_type" class="form-control" id="output_type" placeholder="Enter Type">
+                </div>
+                <div class="form-group">
+                    <label for="output_amount">Amount</label>
+                    <input type="text" name="output_amount" class="form-control" id="output_amount" placeholder="Enter Amount">
+                </div>
+                <div class="form-group">
+                    <label for="output_remark">Remark</label>
+                    <textarea name="output_remark" class="form-control" id="output_remark" placeholder="Enter any remarks"></textarea>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Fluid Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

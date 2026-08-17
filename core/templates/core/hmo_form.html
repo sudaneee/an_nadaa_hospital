@@ -1,0 +1,23 @@
+{% extends "core/partials/base.html" %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{{ hmo.name|default:"Add New HMO" }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="hmo-name">HMO Name</label>
+                    <input type="text" class="form-control" id="hmo-name" name="name" value="{{ hmo.name|default:'' }}" required>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">{% if hmo %}Update{% else %}Create{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

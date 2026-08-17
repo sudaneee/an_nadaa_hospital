@@ -1,0 +1,60 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+      <!-- Main Content -->
+      <div class="main-content mt-1">
+        <div class="card">
+            <div class="card-header">
+                <h4>Edit Payment</h4>
+            </div>
+            <div class="card-body">
+ 
+                    
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Invoice ID</label>
+                                <input type="text" name="invoice" class="form-control" value="{{ payment.invoice }}" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount</label>
+                                <input type="text" name="amount" class="form-control" value="{{ payment.amount }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Payment Date</label>
+                                <input type="date" name="payment_date" class="form-control" value="{{ payment.payment_date|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Payment Method</label>
+                                <select name="payment_method" class="form-control">
+                                    <option {% if payment.payment_method == 'POS' %}selected{% endif %}>POS</option>
+                                    <option {% if payment.payment_method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                                    <option {% if payment.payment_method == 'Cash' %}selected{% endif %}>Cash</option>
+                                    <option {% if payment.payment_method == 'Insurance' %}selected{% endif %}>Insurance</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Created By</label>
+                        <input type="text" name="contact_number" class="form-control" value="{{ payment.created_by }}" disabled>
+                    </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button class="btn btn-primary" type="submit">Update Patient</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

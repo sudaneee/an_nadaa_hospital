@@ -1,0 +1,41 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Investigation</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ investigation.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Unit of Measurement</label>
+                    <input type="text" name="unit_of_measurement" class="form-control" value="{{ investigation.unit_of_measurement }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Reference Range</label>
+                    <input type="text" name="reference_range" class="form-control" value="{{ investigation.reference_range }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Result Type</label>
+                    <select name="result_type" class="form-control" required>
+                        <option value="Numeric" {% if investigation.result_type == 'Numeric' %}selected{% endif %}>Numeric</option>
+                        <option value="Reactive/Non-Reactive" {% if investigation.result_type == 'Reactive/Non-Reactive' %}selected{% endif %}>Reactive/Non-Reactive</option>
+                        <option value="Positive/Negative" {% if investigation.result_type == 'Positive/Negative' %}selected{% endif %}>Positive/Negative</option>
+                        <option value="Text" {% if investigation.result_type == 'Text' %}selected{% endif %}>Text</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" step="any" name="price" class="form-control" value="{{ investigation.price }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

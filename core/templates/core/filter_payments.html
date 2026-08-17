@@ -1,0 +1,95 @@
+{% extends "core/partials/base.html" %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Filter Payments</h4>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'filter_payments' %}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="created_by">Created By</label>
+                            <select id="created_by" name="created_by" class="form-control select2">
+                                <option value="">Select User</option>
+                                {% for user in users %}
+                                <option value="{{ user.username }}" {% if request.GET.created_by == user.username %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="start_date">Start Date</label>
+                            <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="end_date">End Date</label>
+                            <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="service_type">Service Type</label>
+                            <select id="service_type" name="service_type" class="form-control select2">
+                                <option value="">All Services</option>
+                                {% for service in service_types %}
+                                <option value="{{ service }}" {% if request.GET.service_type == service %}selected{% endif %}>
+                                    {{ service }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+            <hr>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Created By</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.payment_number }}</td>
+                        <td>{{ payment.amount }}</td>
+                        <td>{{ payment.payment_date }}</td>
+                        <td>{{ payment.created_by.user.username }}</td>
+                        <td>
+                            {% for item in payment.invoice.items.all %}
+                                {% if item.medication %}
+                                    Medication: {{ item.medication.name }} x {{ item.quantity }}
+                                {% elif item.investigation %}
+                                    Investigation: {{ item.investigation.name }} x {{ item.quantity }}
+                                {% else %}
+                                    Service: {{ item.service.name }} x {{ item.quantity }}
+                                {% endif %}
+                                <br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No payments found matching the criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

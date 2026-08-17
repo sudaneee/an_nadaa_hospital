@@ -1,0 +1,93 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-1">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>Doctor Dashboard</h4>
+                <!-- Date range filter -->
+                <form method="get" class="form-inline mb-3">
+                    <div class="form-group mr-2">
+                        <label class="mr-1">From</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <label class="mr-1">To</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                    </div>
+                    {% include 'core/partials/_date_quick_filters.html' %}
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="table-1">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Patient Number</th>
+                            <th>Patient Name</th>
+                            <th>Clinic</th>
+                            <th>Doctor</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ appointment.patient.patient_file_number }}</td>
+                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                            <td>{{ appointment.reason_category }}</td>
+                            <td>{{ appointment.doctor.profile.user.first_name }} {{ appointment.doctor.profile.user.last_name }}</td>
+                            <td>{{ appointment.appointment_date|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'view_appointment' appointment.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="sr-only">Actions</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        {% if appointment.status == 'Scheduled' %}
+                                        <a href="{% url 'add_prescription' appointment.id %}" class="dropdown-item">
+                                            <i class="fas fa-prescription-bottle-alt mr-1"></i> Prescription
+                                        </a>
+                                        <a href="{% url 'create_investigation_request' appointment.id %}" class="dropdown-item">
+                                            <i class="fas fa-vials mr-1"></i> Investigation
+                                        </a>
+                                        <a href="{% url 'create_admission' appointment.id %}" class="dropdown-item">
+                                            <i class="fas fa-procedures mr-1"></i> Admission
+                                        </a>
+                                        <a href="{% url 'view_appointment_notes' appointment.id %}" class="dropdown-item">
+                                            <i class="fas fa-notes-medical mr-1"></i> Notes
+                                        </a>
+                                        <a href="{% url 'create_diagnosis_appointment' appointment.id %}" class="dropdown-item">
+                                            <i class="fas fa-notes-medical mr-1"></i> Diagnoses
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        {% endif %}
+                                        {% if appointment.status != 'Completed' %}
+                                        <a href="{% url 'complete_appointment' appointment.id %}" class="dropdown-item text-success">
+                                            <i class="fas fa-check mr-1"></i> Complete
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

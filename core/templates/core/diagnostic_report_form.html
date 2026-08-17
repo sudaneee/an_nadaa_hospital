@@ -1,0 +1,263 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{% if report %}Edit{% else %}Create{% endif %} Diagnostic Report</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Patient Details -->
+                <div class="form-group">
+                    <label for="patient_name">Patient Name</label>
+                    <input type="text" name="patient_name" class="form-control" value="{{ report.patient_name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="patient_age">Patient Age</label>
+                    <input type="text" name="patient_age" class="form-control" value="{{ report.patient_age }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select name="gender" class="form-control select2" required>
+                        <option value="M" {% if report.gender == "M" %}selected{% endif %}>Male</option>
+                        <option value="F" {% if report.gender == "F" %}selected{% endif %}>Female</option>
+                        <option value="O" {% if report.gender == "O" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <!-- Report Type -->
+                <div class="form-group">
+                    <label for="report_type">Select Report Type</label>
+                    <select id="report_type" name="report_type" class="form-control select2">
+                        <option value="" disabled {% if not report %}selected{% endif %}>Select Report Type</option>
+                        {% for report_type in report_types %}
+                            <option value="{{ report_type.id }}" {% if report and report.report_type.id == report_type.id %}selected{% endif %}>{{ report_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea name="notes" class="form-control" rows="3">{{ report.notes }}</textarea>
+                </div>
+
+                <!-- Table for Parameters -->
+                <div class="form-group mt-3">
+                    <label for="parameters-select">Parameters</label>
+                    <select id="parameters-select" class="form-control select2" multiple="multiple">
+                        <!-- Options will be populated based on the selected report type -->
+                    </select>
+                </div>
+
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parameters-table-body">
+                        <!-- Parameter rows will be added here dynamically -->
+                        {% if report %}
+                            {% for param_result in report.parameters.all %}
+                            <tr id="parameter-row-{{ param_result.diagnostic_report_parameter.id }}">
+                                <td>{{ param_result.diagnostic_report_parameter.name }}</td>
+                                <td>
+                                    <input type="hidden" name="parameter_ids[]" value="{{ param_result.diagnostic_report_parameter.id }}">
+                                    <textarea name="parameter_values[]" class="form-control" rows="2" required>{{ param_result.value }}</textarea>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" onclick="removeParameterRow({{ param_result.diagnostic_report_parameter.id }})">Remove</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <!-- Image Upload Section -->
+                <div class="form-group mt-4">
+                    <label>Images</label>
+                    <button type="button" class="btn btn-primary" id="add-image-btn">Add Image</button>
+                </div>
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Caption</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="images-table-body">
+                        <!-- Image rows will be added here dynamically -->
+                        {% if report %}
+                            {% for image in report.images.all %}
+                            <tr id="image-row-{{ forloop.counter0 }}">
+                                <td>
+                                    <input type="file" name="images[]" class="form-control">
+                                    <img src="{{ image.image.url }}" alt="Image" width="100" class="mt-2">
+                                </td>
+                                <td>
+                                    <input type="text" name="image_captions[]" class="form-control" value="{{ image.caption }}">
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" onclick="removeImageRow({{ forloop.counter0 }})">Remove</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-success mt-4">{% if report %}Update{% else %}Submit{% endif %} Report</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include Select2 CSS and JS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2 for dropdowns
+    $('.select2').select2({ width: '100%' });
+
+    // Store all parameters in a JavaScript object
+    const allParameters = {};
+    {% for parameter in parameters %}
+        if (!allParameters["{{ parameter.report_type.id }}"]) {
+            allParameters["{{ parameter.report_type.id }}"] = [];
+        }
+        allParameters["{{ parameter.report_type.id }}"].push({ id: "{{ parameter.id }}", name: "{{ parameter.name }}" });
+    {% endfor %}
+
+    // Maintain a map of the current parameter rows and their values
+    let currentParameterRows = {};
+
+    // Initialize parameter dropdown if editing an existing report
+    if ($('#report_type').val()) {
+        const reportTypeId = $('#report_type').val();
+        updateParameterOptions(reportTypeId);
+
+        // Preselect existing parameters and their values
+        {% if report %}
+            const existingParameterValues = {
+                {% for param_result in report.parameters.all %}
+                    "{{ param_result.diagnostic_report_parameter.id }}": "{{ param_result.value }}",
+                {% endfor %}
+            };
+            const existingParameterIds = Object.keys(existingParameterValues);
+            $('#parameters-select').val(existingParameterIds).trigger('change');
+
+            // Add values to the text areas
+            existingParameterIds.forEach(paramId => {
+                document.querySelector(`textarea[data-param-id="${paramId}"]`).value = existingParameterValues[paramId];
+            });
+        {% endif %}
+    }
+
+    // Update parameter dropdown based on selected report type
+    $('#report_type').on('change', function() {
+        const reportTypeId = $(this).val();
+        updateParameterOptions(reportTypeId);
+    });
+
+    function updateParameterOptions(reportTypeId) {
+        const parametersSelect = document.getElementById('parameters-select');
+        parametersSelect.innerHTML = ''; // Clear previous options
+
+        if (allParameters[reportTypeId]) {
+            allParameters[reportTypeId].forEach(param => {
+                const option = document.createElement('option');
+                option.value = param.id;
+                option.textContent = param.name;
+
+                // Pre-select options if editing a report
+                if (currentParameterRows[param.id]) {
+                    option.selected = true;
+                }
+
+                parametersSelect.appendChild(option);
+            });
+        }
+    }
+
+    // Add or retain Parameter Rows based on selection
+    $('#parameters-select').on('change', function() {
+        const selectedParameters = $(this).select2('data');
+        const tbody = document.getElementById('parameters-table-body');
+
+        // Loop over selected parameters and add rows for the new selections
+        selectedParameters.forEach(param => {
+            if (!currentParameterRows[param.id]) {
+                const row = document.createElement('tr');
+                row.id = `parameter-row-${param.id}`;
+                
+                row.innerHTML = `
+                    <td>${param.text}</td>
+                    <td>
+                        <input type="hidden" name="parameter_ids[]" value="${param.id}">
+                        <textarea name="parameter_values[]" class="form-control" data-param-id="${param.id}" rows="2" required></textarea>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removeParameterRow(${param.id})">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                // Add the new parameter row to the map
+                currentParameterRows[param.id] = row;
+            }
+        });
+
+        // Remove rows for unselected parameters
+        Object.keys(currentParameterRows).forEach(paramId => {
+            if (!selectedParameters.some(param => param.id === paramId)) {
+                document.getElementById(`parameter-row-${paramId}`).remove();
+                delete currentParameterRows[paramId];
+            }
+        });
+    });
+
+    window.removeParameterRow = function(index) {
+        document.getElementById(`parameter-row-${index}`).remove();
+        delete currentParameterRows[index]; // Remove from the map
+    };
+
+    // Add Image Row
+    let imageCount = 0;
+    document.getElementById('add-image-btn').addEventListener('click', function() {
+        const tbody = document.getElementById('images-table-body');
+        const row = document.createElement('tr');
+        row.id = `image-row-${imageCount}`;
+        
+        row.innerHTML = `
+            <td>
+                <input type="file" name="images[]" class="form-control" required>
+            </td>
+            <td>
+                <input type="text" name="image_captions[]" class="form-control" placeholder="Enter caption">
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger" onclick="removeImageRow(${imageCount})">Remove</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        imageCount++;
+    });
+
+    window.removeImageRow = function(index) {
+        document.getElementById(`image-row-${index}`).remove();
+    };
+});
+</script>
+{% endblock content %}

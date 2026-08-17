@@ -1,0 +1,38 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Bin Cards</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="table-1">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Current Stock on Hand</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medication in medications %}
+                        <tr>
+                            <td>{{ medication.name }}</td>
+                            <td>{{ medication.total_quantity|default:0 }}</td>
+                            <td>
+                                <a href="{% url 'bin_card_detail' medication.id %}" class="btn btn-primary">View Bin Card</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">No medications available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

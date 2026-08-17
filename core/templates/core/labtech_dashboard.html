@@ -1,0 +1,93 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Lab Technician Dashboard</h4>
+
+            <!-- Date range filter -->
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group mr-2">
+                    <label class="mr-1">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label class="mr-1">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+
+        <div class="card-body">
+            <!-- Messages Section -->
+            {% if messages %}
+            <div class="alert alert-danger alert-dismissible show fade">
+                <div class="alert-body">
+                    <button class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <h5>Pending Investigation Requests</h5>
+            <table class="table table-striped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Request IDs</th>
+                        <th>Patient Names</th>
+                        <th>Investigations</th>
+                        <th>Requested Dates</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice_id, details in grouped_investigations.items %}
+                    <tr>
+                        <td>{{ invoice_id }}</td>
+                        <td>
+                            {% for request in details.requests %}
+                                {{ request.id }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for request in details.requests %}
+                                {% if request.patient %} {{ request.patient }} {% else %} {{ request.patient_name }} {% endif %}
+                                {% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for request in details.requests %}
+                                {{ request.investigation.name }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for request in details.requests %}
+                                {{ request.date_requested }}{% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if details.status == 'Completed' %}
+                                <a href="{% url 'view_grouped_investigation_results' invoice_id %}" class="btn btn-success">View Results</a>
+                            {% else %}
+                                <a href="{% url 'create_grouped_investigation_results' invoice_id %}" class="btn btn-primary">Enter Results</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No pending investigation requests at the moment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,60 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Fluid Chart for {{ fluid_chart.admission.patient.first_name }} {{ fluid_chart.admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="card-header">
+                    <h5>Intake</h5>
+                </div>
+                <div class="form-group">
+                    <label for="intake_type">Intake Type</label>
+                    <input type="text" name="intake_type" class="form-control" id="intake_type" 
+                           value="{{ fluid_chart.intake_type }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="intake_amount">Intake Amount</label>
+                    <input type="text" name="intake_amount" class="form-control" id="intake_amount" 
+                           value="{{ fluid_chart.intake_amount }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="intake_route">Intake Route</label>
+                    <input type="text" name="intake_route" class="form-control" id="intake_route" 
+                           value="{{ fluid_chart.intake_route }}">
+                </div>
+
+                <div class="card-header">
+                    <h5>Output</h5>
+                </div>
+                <div class="form-group">
+                    <label for="output_type">Output Type</label>
+                    <input type="text" name="output_type" class="form-control" id="output_type" 
+                           value="{{ fluid_chart.output_type }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="output_amount">Output Amount</label>
+                    <input type="text" name="output_amount" class="form-control" id="output_amount" 
+                           value="{{ fluid_chart.output_amount }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="output_remark">Output Remarks</label>
+                    <textarea name="output_remark" class="form-control" id="output_remark">{{ fluid_chart.output_remark }}</textarea>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Update Fluid Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

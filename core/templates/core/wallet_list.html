@@ -1,0 +1,56 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>All Wallets and Their Balances</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Wallet</th>
+                        <th>Type</th>
+                        <th>Balance (₦)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for wallet in wallets %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if wallet.family %}
+                                Family: {{ wallet.family.name }} [{{wallet.family.file_number}}]
+                            {% elif wallet.patient %}
+                                Patient: {{ wallet.patient.first_name }} {{ wallet.patient.last_name }} [{{wallet.patient.patient_file_number}}]
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if wallet.family %}
+                                Family Wallet
+                            {% elif wallet.patient %}
+                                Patient Wallet
+                            {% endif %}
+                        </td>
+                        <td>{{ wallet.balance|floatformat:2|intcomma }}</td>
+                        <td>
+                            <a href="{% url 'view_wallet_transactions' wallet.id %}" class="btn btn-info">
+                                View Transactions
+                            </a>
+         
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No wallets found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

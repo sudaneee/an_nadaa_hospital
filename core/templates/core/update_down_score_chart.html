@@ -1,0 +1,64 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Down's Score Chart for {{ down_score_chart.admission.patient.first_name }} {{ down_score_chart.admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="respiratory_rate">Respiratory Rate</label>
+                    <select name="respiratory_rate" class="form-control" id="respiratory_rate">
+                        <option value="0" {% if down_score_chart.respiratory_rate == 0 %}selected{% endif %}>< 60 (0)</option>
+                        <option value="1" {% if down_score_chart.respiratory_rate == 1 %}selected{% endif %}>60-80 (1)</option>
+                        <option value="2" {% if down_score_chart.respiratory_rate == 2 %}selected{% endif %}>> 80 (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cyanosis">Cyanosis</label>
+                    <select name="cyanosis" class="form-control" id="cyanosis">
+                        <option value="0" {% if down_score_chart.cyanosis == 0 %}selected{% endif %}>None (0)</option>
+                        <option value="1" {% if down_score_chart.cyanosis == 1 %}selected{% endif %}>At Room Air (1)</option>
+                        <option value="2" {% if down_score_chart.cyanosis == 2 %}selected{% endif %}>With 40% O2 (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="retraction">Retraction</label>
+                    <select name="retraction" class="form-control" id="retraction">
+                        <option value="0" {% if down_score_chart.retraction == 0 %}selected{% endif %}>None (0)</option>
+                        <option value="1" {% if down_score_chart.retraction == 1 %}selected{% endif %}>Mild (1)</option>
+                        <option value="2" {% if down_score_chart.retraction == 2 %}selected{% endif %}>Moderate-Severe (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="grunting">Grunting</label>
+                    <select name="grunting" class="form-control" id="grunting">
+                        <option value="0" {% if down_score_chart.grunting == 0 %}selected{% endif %}>None (0)</option>
+                        <option value="1" {% if down_score_chart.grunting == 1 %}selected{% endif %}>Audible with Stethoscope (1)</option>
+                        <option value="2" {% if down_score_chart.grunting == 2 %}selected{% endif %}>Audible without Stethoscope (2)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="air_entry">Air Entry</label>
+                    <select name="air_entry" class="form-control" id="air_entry">
+                        <option value="0" {% if down_score_chart.air_entry == 0 %}selected{% endif %}>Clear (0)</option>
+                        <option value="1" {% if down_score_chart.air_entry == 1 %}selected{% endif %}>Decreased (1)</option>
+                        <option value="2" {% if down_score_chart.air_entry == 2 %}selected{% endif %}>Barely Audible (2)</option>
+                    </select>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Update Down's Score Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

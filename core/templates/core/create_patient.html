@@ -1,0 +1,183 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+{% block content %}
+      <!-- Main Content -->
+      <div class="main-content mt-1">
+        <div class="card">
+            <div class="card-header">
+                <h4>Add New Patient</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Patient Photo (Optional)</label>
+                                <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="text" name="age" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="address" class="form-control" ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Next of Kin Name</label>
+                        <input type="text" name="next_of_kin_name" class="form-control">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Next of Kin Relationship</label>
+                                <input type="text" name="next_of_kin_relationship" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Next of Kin Contact</label>
+                                <input type="text" name="next_of_kin_contact" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Patient File Number (Optional)</label>
+                                <input type="text" name="patient_file_number" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>File Type</label>
+                                <select name="file_type" id="file_type" class="form-control" required>
+                                    <option value="" disabled selected>Select File Type</option>
+                                    <option value="Private/Individual">Private/Individual</option>
+                                    <option value="NHI">NHI</option>
+                                    <option value="Company">Company</option>
+                                    <option value="Family">Family</option>
+                                    <option value="NHI - Private">NHI - Private</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="hmo-field" style="display:none;">
+                            <div class="form-group">
+                                <label>HMO</label>
+                                <select name="hmo" id="hmo-select" class="form-control">
+                                    <option value="" disabled selected>Select HMO</option>
+                                    {% for hmo in hmos %}
+                                        <option value="{{ hmo.id }}">{{ hmo.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="company-field" style="display:none;">
+                            <div class="form-group">
+                                <label>Company</label>
+                                <select name="company" id="company-select" class="form-control">
+                                    <option value="" disabled selected>Select Company</option>
+                                    {% for company in companies %}
+                                        <option value="{{ company.id }}">{{ company.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="family-field" style="display:none;">
+                            <div class="form-group">
+                                <label>Family</label>
+                                <select name="family" id="family-select" class="form-control">
+                                    <option value="" disabled selected>Select Family</option>
+                                    {% for i in families %}
+                                        <option value="{{ i.id }}">{{ i.name }} [{{ i.file_number }}]</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button class="btn btn-primary" type="submit">Add Patient</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var fileType = document.getElementById('file_type');
+            var initialized = {};
+
+            function showField(fieldId, selectId) {
+                var field = document.getElementById(fieldId);
+                field.style.display = '';
+                if (!initialized[selectId]) {
+                    $('#' + selectId).select2({ width: '100%', theme: 'bootstrap4' });
+                    initialized[selectId] = true;
+                }
+            }
+
+            function hideField(fieldId) {
+                document.getElementById(fieldId).style.display = 'none';
+            }
+
+            function toggleFields() {
+                var value = fileType.value;
+                if (value === 'NHI' || value === 'NHI - Private') {
+                    showField('hmo-field', 'hmo-select');
+                } else {
+                    hideField('hmo-field');
+                }
+                if (value === 'Company') {
+                    showField('company-field', 'company-select');
+                } else {
+                    hideField('company-field');
+                }
+                if (value === 'Family') {
+                    showField('family-field', 'family-select');
+                } else {
+                    hideField('family-field');
+                }
+            }
+
+            fileType.addEventListener('change', toggleFields);
+            toggleFields();
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,58 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="section-header">
+        <h1>Invoice Details - Invoice #{{ invoice.invoice_number }}</h1>
+    </div>
+
+    <div class="section-body">
+        <h5>Patient: {{ invoice.patient.first_name }} {{ invoice.patient.last_name }}</h5>
+        <h5>Total Amount: ₦{{ invoice.total_amount|floatformat:2|intcomma }}</h5>
+
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in invoice_items %}
+                    <tr>
+                        <td><input type="checkbox" name="item_ids" value="{{ item.id }}"></td>
+                        <td>
+                            {% if item.medication %}
+                                {{ item.medication.name }} - Medication
+                            {% elif item.service %}
+                                {{ item.service.name }} - Service
+                            {% elif item.investigation_request %}
+                                {{ item.investigation_request.investigation.name }} - Investigation Request
+                            {% elif item.description %}
+                                {{ item.description }} - Others
+                            {% endif %}
+                        </td>
+                        <td>
+                            <input type="number" name="quantities" value="{{ item.quantity }}" class="form-control" min="1">
+                        </td>
+                        <td>₦{{ item.unit_price|floatformat:2|intcomma }}</td>
+                        <td>₦{{ item.total_price|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No items found for this invoice.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-danger">Update Quantities / Remove Selected Items & Process Refund</button>
+        </form>
+        <a href="{% url 'cashier_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock content %}

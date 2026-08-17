@@ -1,0 +1,181 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Investigation Requests</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Patient Selection -->
+                <div class="form-group">
+                    <label for="patient_id">Select Patient</label>
+                    <select name="patient_id" id="patient_id" class="form-control select2" onchange="toggleOutpatientFields()">
+                        <option value="">Select Patient (Leave empty if outpatient)</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }} ({{ patient.patient_file_number }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Outpatient Information -->
+                <div id="outpatient-info">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label for="outpatient_name">Patient Name</label>
+                            <input type="text" name="outpatient_name" id="outpatient_name" class="form-control">
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="outpatient_age">Age</label>
+                            <input type="number" name="outpatient_age" id="outpatient_age" class="form-control">
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="outpatient_gender">Gender</label>
+                            <select name="outpatient_gender" id="outpatient_gender" class="form-control select2">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investigation Requests -->
+                <div class="form-group">
+                    <label for="investigation-select">Select Investigations</label>
+                    <select id="investigation-select" class="form-control select2" multiple="multiple">
+                        {% for investigation in investigations %}
+                            <option value="{{ investigation.id }}" data-name="{{ investigation.name }}" data-price="{{ investigation.price }}">{{ investigation.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Table for Investigations -->
+                <table class="table table-striped mt-4">
+                    <thead>
+                        <tr>
+                            <th>Investigation Name</th>
+                            <th>Price (₦)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="investigations-table-body">
+                        <!-- Investigation rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div class="mt-3">
+                    <h5>Overall Total: <span id="overall-total">₦0.00</span></h5>
+                </div>
+
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Investigation Requests</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleOutpatientFields() {
+    var patientSelect = document.getElementById('patient_id');
+    var outpatientInfo = document.getElementById('outpatient-info');
+    
+    if (patientSelect.value === "") {
+        outpatientInfo.style.display = 'block';
+    } else {
+        outpatientInfo.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    $('.select2').select2({
+        width: '100%',
+        placeholder: 'Select investigations'
+    });
+
+    const calculateTotal = () => {
+        let overallTotal = 0;
+        const rows = document.querySelectorAll('.investigation-row');
+        rows.forEach(function (row) {
+            const price = parseFloat(row.querySelector('.investigation-price').innerText);
+            overallTotal += price;
+        });
+        document.getElementById('overall-total').innerText = `₦${overallTotal.toFixed(2)}`;
+    };
+
+    const addInvestigationRow = (investigationId, investigationName, investigationPrice) => {
+        const tbody = document.getElementById('investigations-table-body');
+
+        // Check if the investigation is already added
+        if (document.getElementById(`investigation-row-${investigationId}`)) {
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'investigation-row';
+        row.id = `investigation-row-${investigationId}`;
+
+        const nameCell = document.createElement('td');
+        nameCell.innerText = investigationName;
+
+        const priceCell = document.createElement('td');
+        priceCell.className = 'investigation-price';
+        priceCell.innerText = investigationPrice.toFixed(2);
+
+        const actionCell = document.createElement('td');
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-danger btn-sm';
+        removeButton.innerText = 'Remove';
+        removeButton.onclick = () => {
+            removeInvestigationRow(investigationId);
+        };
+        actionCell.appendChild(removeButton);
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'investigation_id';
+        hiddenInput.value = investigationId;
+
+        row.appendChild(nameCell);
+        row.appendChild(priceCell);
+        row.appendChild(actionCell);
+        row.appendChild(hiddenInput);
+
+        tbody.appendChild(row);
+    };
+
+    const removeInvestigationRow = (investigationId) => {
+        const row = document.getElementById(`investigation-row-${investigationId}`);
+        if (row) {
+            row.remove();
+            calculateTotal();  // Recalculate the total after removing a row
+        }
+    };
+
+    $('#investigation-select').on('change', function () {
+        const selectedOptions = $(this).select2('data');
+
+        selectedOptions.forEach(function (option) {
+            const investigationId = option.id;
+            const investigationName = option.text;
+            const investigationPrice = parseFloat(option.element.dataset.price);
+
+            addInvestigationRow(investigationId, investigationName, investigationPrice);
+        });
+
+        calculateTotal();  // Calculate the total after every change
+    });
+
+    $('#investigation-select').on('select2:unselect', function (e) {
+        const deselectedOption = e.params.data;
+        const investigationId = deselectedOption.id;
+        removeInvestigationRow(investigationId);  // Remove row when investigation is deselected
+    });
+
+    document.getElementById('investigations-table-body').addEventListener('input', calculateTotal);
+});
+</script>
+{% endblock content %}

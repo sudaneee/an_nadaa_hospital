@@ -1,0 +1,61 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Add Investigation Results for Invoice ID: {{ invoice_id }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {% for request in investigation_requests %}
+                <div class="investigation-group">
+                    <h5>Investigation: {{ request.investigation.name }}</h5>
+                    <input type="hidden" name="request_id_{{ request.id }}" value="{{ request.id }}">
+                    
+                    {% if request.investigation.result_type == 'Numeric' %}
+                    <div class="form-group">
+                        <label>Numeric Result</label>
+                        <input type="number" step="any" name="numeric_result_{{ request.id }}" class="form-control">
+                    </div>
+                    {% elif request.investigation.result_type == 'Reactive/Non-Reactive' %}
+                    <div class="form-group">
+                        <label>Reactive/Non-Reactive Result</label>
+                        <select name="reactive_non_reactive_result_{{ request.id }}" class="form-control">
+                            <option value="Reactive">Reactive</option>
+                            <option value="Non-Reactive">Non-Reactive</option>
+                        </select>
+                    </div>
+                    {% elif request.investigation.result_type == 'Positive/Negative' %}
+                    <div class="form-group">
+                        <label>Positive/Negative Result</label>
+                        <select name="positive_negative_result_{{ request.id }}" class="form-control">
+                            <option value="Positive">Positive</option>
+                            <option value="Negative">Negative</option>
+                        </select>
+                    </div>
+                    {% elif request.investigation.result_type == 'Text' %}
+                    <div class="form-group">
+                        <label>Text Result</label>
+                        <textarea name="text_result_{{ request.id }}" class="form-control"></textarea>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label>Abnormal</label>
+                        <input type="checkbox" name="is_abnormal_{{ request.id }}" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea name="remarks_{{ request.id }}" class="form-control"></textarea>
+                    </div>
+                </div>
+                <hr>
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-primary">Submit All Results</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

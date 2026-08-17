@@ -1,0 +1,26 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>{% if report_type %}Update Report Type{% else %}Create Report Type{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{% if report_type %}{{ report_type.name }}{% endif %}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description">{% if report_type %}{{ report_type.description }}{% endif %}</textarea>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">{% if report_type %}Update{% else %}Create{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

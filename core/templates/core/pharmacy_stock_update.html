@@ -1,0 +1,46 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Pharmacy Stock</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="medication">Medication</label>
+                    <select class="form-control select2" id="medication" name="medication">
+                        {% for medication in medications %}
+                            <option value="{{ medication.id }}" {% if pharmacy_stock.medication.id == medication.id %}selected{% endif %}>
+                                {{ medication.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" value="{{ pharmacy_stock.quantity }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <input type="text" class="form-control" id="unit" name="unit" value="{{ pharmacy_stock.unit }}">
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit Price</label>
+                    <input type="text" class="form-control" id="unit_price" name="unit_price" value="{{ pharmacy_stock.unit_price }}">
+                </div>
+                <div class="form-group">
+                    <label for="transaction_type">Transaction Type</label>
+                    <select class="form-control select2" id="transaction_type" name="transaction_type">
+                        <option>None</option>
+                        <option>Addition</option>
+                        <option>Removal</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Stock</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

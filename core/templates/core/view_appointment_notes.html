@@ -1,0 +1,36 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Doctor's Notes for {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <h5>Existing Notes</h5>
+            {% if notes %}
+                {% for note in notes %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p>{{ note.note }}</p>
+                        <p><small>Written by Dr. {{ note.doctor.username }} on {{ note.created_at|date:"Y-m-d H:i" }}</small></p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No notes available for this appointment.</p>
+            {% endif %}
+
+            <hr>
+
+            <h5>Add New Note</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea name="note" class="form-control" rows="4" placeholder="Enter your note here..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Note</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

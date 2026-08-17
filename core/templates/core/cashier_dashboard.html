@@ -1,0 +1,183 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="section-header">
+        <h1>Cashier Dashboard</h1>
+    </div>
+
+    <div class="section-body">
+        <!-- Messages Section -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == "success" %}alert-success {% else %}alert-danger {% endif %} alert-dismissible show fade">
+            <div class="alert-body">
+                <button class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Cashier Totals Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Daily Totals by Cashier</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Cashier Name</th>
+                                    <th>POS (₦)</th>
+                                    <th>Cash (₦)</th>
+                                    <th>Bank Transfer (₦)</th>
+                                    <th>Insurance (₦)</th>
+                                    <th>Wallet (₦)</th>
+                                    <th>Others (₦)</th>
+                                    <th>Wallet Funding (₦)</th>
+                                    <th>Total (₦)</th>
+                                    <th>Refunds (₦)</th>
+                                    <th>Net Total (₦)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cashier, data in cashier_data.items %}
+                                <tr>
+                                    <td>{{ cashier }}</td>
+                                    <td>{{ data.pos|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.cash|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.bank_transfer|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.insurance|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.wallet|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.other|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.wallet_credits|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.total|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.refunds|floatformat:2|intcomma }}</td>
+                                    <td>{{ data.net_total|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11">No cashier data available for today.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payments Section with Filters -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4>Pending Payments</h4>
+                        <form method="get" class="form-inline mb-3">
+                            <div class="form-group mr-2">
+                                <label class="mr-1">From</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                            </div>
+                            <div class="form-group mr-2">
+                                <label class="mr-1">To</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                            </div>
+                            {% include 'core/partials/_date_quick_filters.html' %}
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{% url 'merge_invoices' %}">
+                            {% csrf_token %}
+                            <table class="table table-striped" id="table-1">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Invoice ID</th>
+                                        <th>Patient Name</th>
+                                        <th>Total Amount (₦)</th>
+                                        <th>Amount Paid (₦)</th>
+                                        <th>Refunds (₦)</th>
+                                        <th>Balance Due (₦)</th>
+                                        <th>Invoice Items</th>
+                                        <th>Created By</th>
+                                        <th>Date & Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for data in invoice_data %}
+                                    <tr>
+                                        <td>
+                                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
+                                            <input type="checkbox" name="invoices" value="{{ data.invoice.id }}">
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ data.invoice.invoice_number }}</td>
+                                        <td>{{ data.patient_name }}</td>
+                                        <td>{{ data.invoice.total_amount|floatformat:2|intcomma }}</td>
+                                        <td>{{ data.total_paid|floatformat:2|intcomma }}</td>
+                                        <td>{{ data.refund|floatformat:2|intcomma }}</td>
+                                        <td>{{ data.balance_due|floatformat:2|intcomma }}</td>
+                                        <td>
+                                            <ul>
+                                                {% for item in data.items %}
+                                                    <li>
+                                                        {% if item.medication %}
+                                                            {{ item.medication.name }} ({{ item.quantity }} x {{ item.unit_price|floatformat:2|intcomma }}) - Medication
+                                                        {% elif item.service %}
+                                                            {{ item.service.name }} ({{ item.quantity }} x {{ item.unit_price|floatformat:2|intcomma }}) - Service
+                                                        {% elif item.investigation_request %}
+                                                            {{ item.investigation_request.investigation.name }} ({{ item.quantity }} x {{ item.unit_price|floatformat:2|intcomma }}) - Investigation Request
+                                                        {% elif item.description %}
+                                                            {{ item.description }} ({{ item.quantity }} x {{ item.unit_price|floatformat:2|intcomma }}) - Others
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                        <td>{{ data.invoice.created_by }}</td>
+                                        <td>{{ data.invoice.created_at }}</td>
+                                        <td>
+                                            {% if data.balance_due > 0 %}
+                                            <a href="{% url 'update_invoice_payment' data.invoice.id %}" class="btn btn-primary">Process Payment</a>
+                                            {% elif data.balance_due < 0 %}
+                                            <a href="{% url 'update_invoice_payment' data.invoice.id %}" class="btn btn-warning">Refund Payment</a>
+                                            {% else %}
+                                            <span class="badge badge-success">Paid</span>
+                                            <a href="{% url 'view_invoice' data.invoice.id %}" class="btn btn-warning">View Receipt</a>
+                                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
+                                            <a href="{% url 'view_paid_invoice' data.invoice.id %}" class="btn btn-danger">Create Refund</a>
+                                            {% endif %}
+                                            {% endif %}
+
+                                            
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="11">No pending payments at the moment.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- Merge and Delete buttons -->
+                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
+                            <button type="submit" class="btn btn-success">Merge Selected Invoices</button>
+                            <button type="submit" formaction="{% url 'delete_invoices' %}" class="btn btn-danger">Delete Selected Invoices</button>
+                            {% endif %}
+                        </form>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

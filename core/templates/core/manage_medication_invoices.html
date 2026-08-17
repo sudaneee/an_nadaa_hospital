@@ -1,0 +1,86 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>Manage Medication Invoices</h4>
+                <!-- Date range filter -->
+                <form method="get" class="form-inline mb-3">
+                    <div class="form-group mr-2">
+                        <label class="mr-1">From</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <label class="mr-1">To</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                    </div>
+                    {% include 'core/partials/_date_quick_filters.html' %}
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Total Amount</th>
+                        <th>Date & Time</th>
+                        <th>Created By</th>
+                        <th>Paid</th>
+                        <th>Invoice Items</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.patient.patient_file_number }}</td>
+                        <td>{{ invoice.patient.first_name }} {{ invoice.patient.last_name }}</td>
+                        <td>{{ invoice.total_amount }}</td>
+                        <td>{{ invoice.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ invoice.created_by }}</td>
+                        <td>
+                            {% if invoice.is_paid %}
+                            <span class="badge badge-success">Paid</span>
+                            {% else %}
+                            <span class="badge badge-danger">Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <ul>
+                                {% for item in invoice.items.all %}
+                                <li>{{ item.medication.name }} (Qty: {{ item.quantity }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" or request.user.profile.role == "Pharmacist" %}
+                                <a href="{% url 'update_invoice' invoice.id %}" class="btn btn-primary">Update Items</a>
+                                {% endif %}
+                                {% if invoice.is_paid and not invoice.is_dispensed %}
+                                <a href="{% url 'dispense_medication' invoice.id %}" class="btn btn-success">Dispense Medication</a>
+                                {% elif invoice.is_dispensed %}
+                                <span class="btn btn-secondary disabled" aria-disabled="true">Medication Dispensed</span>
+                                {% else %}
+                                <span class="btn btn-secondary disabled" aria-disabled="true">Awaiting Payment</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No medication invoices available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,70 @@
+{% extends "core/partials/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Day Book</h4>
+            <a href="?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}&export=excel"
+               class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline mb-4">
+                <div class="form-group mr-3">
+                    <label class="mr-2">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mr-3">
+                    <label class="mr-2">End Date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">View</button>
+            </form>
+
+            <p class="mb-3">
+                Showing <strong>{{ start_date|date:"d M Y" }}</strong> to <strong>{{ end_date|date:"d M Y" }}</strong>
+            </p>
+
+            {% if rows %}
+            <div class="table-responsive">
+                <table class="table table-striped" id="table-1">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>CASHIER</th>
+                            <th>DATE</th>
+                            <th>AMOUNT PAID (&#8358;)</th>
+                            {% for method in payment_method_cols %}
+                            <th>{{ method|upper }}</th>
+                            {% endfor %}
+                            {% for cat in category_cols %}
+                            <th>{{ cat|upper }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ row.cashier }}</td>
+                            <td>{{ row.date|date:"d/m/Y" }}</td>
+                            <td><strong>{{ row.amount_paid|floatformat:2|intcomma }}</strong></td>
+                            {% for val in row.method_values %}
+                            <td>{% if val %}{{ val|floatformat:2|intcomma }}{% else %}-{% endif %}</td>
+                            {% endfor %}
+                            {% for val in row.category_values %}
+                            <td>{% if val %}{{ val|floatformat:2|intcomma }}{% else %}-{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No payments recorded for this period.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

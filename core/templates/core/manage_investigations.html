@@ -1,0 +1,44 @@
+{% extends "core/partials/base.html" %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Manage Investigations</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered" id="table-1">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Unit of Measurement</th>
+                        <th>Reference Range</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investigation in investigations %}
+                    <tr>
+                        <td>{{ investigation.id }}</td>
+                        <td>{{ investigation.name }}</td>
+                        <td>{{ investigation.unit_of_measurement }}</td>
+                        <td>{{ investigation.reference_range }}</td>
+                        <td>{{ investigation.price }}</td>
+                        <td>
+                            <a href="{% url 'update_investigation' investigation.id %}" class="btn btn-primary">Update</a>
+                            <a href="{% url 'delete_investigation' investigation.id %}" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No investigations available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'create_investigation' %}" class="btn btn-primary">Create New Investigation</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

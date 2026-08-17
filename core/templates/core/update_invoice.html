@@ -1,0 +1,106 @@
+{% extends "core/partials/base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Invoice #{{ invoice.invoice_number }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Delete</th>
+                            <th>Medication</th>
+                            <th>Quantity to Dispense</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice_items %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="delete" value="{{ forloop.counter0 }}">
+                            </td>
+                            <td>
+                                <select name="medication_id" class="form-control select2">
+                                    {% for medication in all_medications %}
+                                        <option value="{{ medication.id }}"
+                                            {% if medication.id == item.medication.id %} selected {% endif %}>
+                                            {{ medication.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-primary">Update Invoice</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+
+
+
+
+
+
+{% comment %} {% extends "core/partials/base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Update Invoice #{{ invoice.invoice_number }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Delete</th>
+                            <th>Medication</th>
+                            <th>Available Quantity</th>
+                            <th>Quantity to Dispense</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice_items %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="delete" value="{{ forloop.counter0 }}">
+                            </td>
+                            <td>
+                                <select name="medication_id" class="form-control select2">
+                                    {% for medication in all_medications %}
+                                        <option value="{{ medication.id }}"
+                                            {% if medication.id == item.medication.id %} selected {% endif %}>
+                                            {{ medication.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>{{ available_stock|get_item:item.medication.id }}</td>
+                            <td>
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ available_stock|get_item:item.medication.id }}" class="form-control">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-primary">Update Invoice</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %} {% endcomment %}

@@ -1,0 +1,44 @@
+{% extends "core/partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Create Observation Chart for {{ admission.patient.first_name }} {{ admission.patient.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="temperature">Temperature (°C)</label>
+                    <input type="number" step="0.1" name="temperature" class="form-control" id="temperature" placeholder="Enter temperature">
+                </div>
+                <div class="form-group">
+                    <label for="pulse">Pulse (bpm)</label>
+                    <input type="text" name="pulse" class="form-control" id="pulse" placeholder="Enter pulse rate">
+                </div>
+                <div class="form-group">
+                    <label for="respiratory_rate">Respiratory Rate (breaths/min)</label>
+                    <input type="text" name="respiratory_rate" class="form-control" id="respiratory_rate" placeholder="Enter respiratory rate">
+                </div>
+                <div class="form-group">
+                    <label for="blood_pressure">Blood Pressure (mmHg)</label>
+                    <input type="text" name="blood_pressure" class="form-control" id="blood_pressure" placeholder="Enter blood pressure">
+                </div>
+                <div class="form-group">
+                    <label for="oxygen_saturation">Oxygen Saturation (%)</label>
+                    <input type="number" step="0.1" name="oxygen_saturation" class="form-control" id="oxygen_saturation" placeholder="Enter oxygen saturation">
+                </div>
+                <div class="form-group">
+                    <label for="remark">Remark</label>
+                    <textarea name="remark" class="form-control" id="remark" placeholder="Enter any remarks"></textarea>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary">Create Observation Chart</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

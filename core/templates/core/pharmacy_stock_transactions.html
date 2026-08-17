@@ -1,0 +1,62 @@
+{% extends "core/partials/base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="main-content mt-5">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4>Pharmacy Stock Transactions</h4>
+            <!-- Date range filter -->
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group mr-2">
+                    <label class="mr-1">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label class="mr-1">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                {% include 'core/partials/_date_quick_filters.html' %}
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+        <div class="card-body">
+     
+            <table class="table table-striped" id="table-1">
+                <thead>
+                    <tr>
+                        <th>Stock</th>
+                        <th>Transaction Type</th>
+                        <th>Quantity</th>
+                        <th>Created on</th>
+                        <th>Created by</th>
+                        <th>Updated on</th>
+                        <th>Updated by</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in transactions %}
+                    <tr>
+                        <td>{{ i.pharmacy_stock }}</td>
+                        <td>{{ i.transaction_type }}</td>
+                        <td>{{ i.quantity }}</td>
+                        <td>{{ i.created_at}}</td>
+                        <td>{{ i.created_by}}</td>
+
+                        <td>{{ i.updated_at }}</td>
+                        <td>{{ i.updated_by }}</td>
+                        <td>
+                           
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No stock available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

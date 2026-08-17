@@ -12,9 +12,9 @@ __pycache__/
 db.sqlite3
 db.sqlite3.bak_*
 db.lite3
-media/
-staticfiles/
-static/
+/media/
+/staticfiles/
+/static/
 
 # Stray/legacy artifact (not the real MEDIA_ROOT, which is media/profile_pictures)
 /profile_pictures/

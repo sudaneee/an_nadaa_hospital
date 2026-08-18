@@ -60,8 +60,12 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" or request.user.profile.role == "Pharmacist" %}
+                                {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
                                 <a href="{% url 'update_invoice' invoice.id %}" class="btn btn-primary">Update Items</a>
+                                {% elif request.user.profile.role == "Pharmacist" and not invoice.is_paid %}
+                                <a href="{% url 'update_invoice' invoice.id %}" class="btn btn-primary">Update Items</a>
+                                {% elif request.user.profile.role == "Pharmacist" %}
+                                <span class="btn btn-secondary disabled" aria-disabled="true" title="Paid invoices can only be changed by Accounts">Locked (Paid)</span>
                                 {% endif %}
                                 {% if invoice.is_paid and not invoice.is_dispensed %}
                                 <a href="{% url 'dispense_medication' invoice.id %}" class="btn btn-success">Dispense Medication</a>

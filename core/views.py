@@ -2052,6 +2052,11 @@ def update_invoice_payment(request, invoice_id):
         amount = Decimal(amount_str) if amount_str else balance_due
 
         if is_refund:
+            # Refunds are an Accounts-only action, even for Cashiers who can
+            # otherwise access this view to process payments.
+            if request.user.profile.role not in ['Admin', 'Accountant']:
+                messages.error(request, "Only Accounts can process refunds. Please contact the Accounts department.")
+                return redirect('view_invoice', invoice_id)
             # Handling refunds
             if amount <= 0:
                 messages.error(request, "Refund amount must be positive.")
@@ -2214,6 +2219,14 @@ def update_invoice(request, invoice_id):
 
     if request.user.profile.role in ['Admin', 'Pharmacist', 'Accountant']:
         invoice = get_object_or_404(Invoice, id=invoice_id)
+
+        # Once an invoice is paid and a receipt has been generated, it can no
+        # longer be tampered with (items removed/quantities changed) except by
+        # Accounts. This closes the pharmacy-return -> cashier-refund loophole.
+        if invoice.is_paid and request.user.profile.role not in ['Admin', 'Accountant']:
+            messages.error(request, "This invoice has already been paid and a receipt generated. Item changes are no longer allowed — please contact Accounts.")
+            return redirect('manage_medication_invoices')
+
         invoice_items = InvoiceItem.objects.filter(invoice=invoice)
 
         if request.method == 'POST':

@@ -147,7 +147,7 @@
                                             {% if data.balance_due > 0 %}
                                             <a href="{% url 'update_invoice_payment' data.invoice.id %}" class="btn btn-primary">Process Payment</a>
                                             {% elif data.balance_due < 0 %}
-                                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
+                                            {% if request.user.profile.role == "Accountant" %}
                                             <a href="{% url 'update_invoice_payment' data.invoice.id %}" class="btn btn-warning">Refund Payment</a>
                                             {% else %}
                                             <span class="badge badge-secondary">Refund Pending &ndash; Contact Accounts</span>
@@ -155,7 +155,7 @@
                                             {% else %}
                                             <span class="badge badge-success">Paid</span>
                                             <a href="{% url 'view_invoice' data.invoice.id %}" class="btn btn-warning">View Receipt</a>
-                                            {% if request.user.profile.role == "Admin" or request.user.profile.role == "Accountant" %}
+                                            {% if request.user.profile.role == "Accountant" %}
                                             <a href="{% url 'view_paid_invoice' data.invoice.id %}" class="btn btn-danger">Create Refund</a>
                                             {% endif %}
                                             {% endif %}

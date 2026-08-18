@@ -2052,9 +2052,9 @@ def update_invoice_payment(request, invoice_id):
         amount = Decimal(amount_str) if amount_str else balance_due
 
         if is_refund:
-            # Refunds are an Accounts-only action, even for Cashiers who can
-            # otherwise access this view to process payments.
-            if request.user.profile.role not in ['Admin', 'Accountant']:
+            # Refunds are an Accountant-only action, even for Cashiers (and
+            # Admin) who can otherwise access this view to process payments.
+            if request.user.profile.role != 'Accountant':
                 messages.error(request, "Only Accounts can process refunds. Please contact the Accounts department.")
                 return redirect('view_invoice', invoice_id)
             # Handling refunds
@@ -2222,8 +2222,9 @@ def update_invoice(request, invoice_id):
 
         # Once an invoice is paid and a receipt has been generated, it can no
         # longer be tampered with (items removed/quantities changed) except by
-        # Accounts. This closes the pharmacy-return -> cashier-refund loophole.
-        if invoice.is_paid and request.user.profile.role not in ['Admin', 'Accountant']:
+        # the Accountant role — not even Admin. This closes the
+        # pharmacy-return -> cashier-refund loophole.
+        if invoice.is_paid and request.user.profile.role != 'Accountant':
             messages.error(request, "This invoice has already been paid and a receipt generated. Item changes are no longer allowed — please contact Accounts.")
             return redirect('manage_medication_invoices')
 
@@ -4378,7 +4379,7 @@ def wallet_funding_receipt(request, transaction_id):
 
 @login_required(login_url='login')
 def view_paid_invoice(request, invoice_id):
-    if request.user.profile.role not in ['Admin', 'Accountant']:
+    if request.user.profile.role != 'Accountant':
         return redirect('dashboard')
 
     invoice = get_object_or_404(Invoice, id=invoice_id, is_paid=True)

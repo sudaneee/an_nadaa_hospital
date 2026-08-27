@@ -2119,36 +2119,39 @@ def update_invoice_payment(request, invoice_id):
                         wallet = patient.wallet
 
                     if wallet:
-                        # Deduct the wallet balance
-                        wallet.balance -= amount
-                        wallet.save()
+                        if wallet.balance < amount:
+                            messages.error(request, f"Insufficient wallet balance. Wallet has {wallet.balance}, payment requires {amount}.")
+                        else:
+                            # Deduct the wallet balance
+                            wallet.balance -= amount
+                            wallet.save()
 
-                        # Create a transaction record
-                        Transaction.objects.create(
-                            wallet=wallet,
-                            amount=amount,
-                            transaction_type='Debit',
-                            description=f'Payment for Invoice #{invoice.invoice_number}',
-                            created_by=request.user.profile
-                        )
+                            # Create a transaction record
+                            Transaction.objects.create(
+                                wallet=wallet,
+                                amount=amount,
+                                transaction_type='Debit',
+                                description=f'Payment for Invoice #{invoice.invoice_number}',
+                                created_by=request.user.profile
+                            )
 
-                        # Process payment as usual
-                        Payment.objects.create(
-                            invoice=invoice,
-                            amount=amount,
-                            payment_method='Wallet',
-                            created_by=request.user.profile
-                        )
+                            # Process payment as usual
+                            Payment.objects.create(
+                                invoice=invoice,
+                                amount=amount,
+                                payment_method='Wallet',
+                                created_by=request.user.profile
+                            )
 
-                        net_paid += amount
-                        balance_due = invoice.total_amount - net_paid
+                            net_paid += amount
+                            balance_due = invoice.total_amount - net_paid
 
-                        if balance_due <= 0:
-                            invoice.is_paid = True
-                            invoice.save()
+                            if balance_due <= 0:
+                                invoice.is_paid = True
+                                invoice.save()
 
-                        messages.success(request, f"Invoice #{invoice.invoice_number} updated successfully using wallet.")
-                        return redirect('view_invoice', invoice_id)
+                            messages.success(request, f"Invoice #{invoice.invoice_number} updated successfully using wallet.")
+                            return redirect('view_invoice', invoice_id)
                     else:
                         messages.error(request, "No wallet found for the patient or family. Payment cannot be processed using wallet.")
                 else:

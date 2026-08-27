@@ -15,10 +15,10 @@
                 <div class="form-group">
                     <label for="ward">Ward</label>
                     <select name="ward" id="ward" class="form-control">
-                        <option value="Maternity">Maternity</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Pediatrics">Labour</option>
-                        <option value="SCUB">SCUB</option>
+                        <option value="">-- Select Ward --</option>
+                        {% for ward in wards %}
+                        <option value="{{ ward.id }}">{{ ward.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="card-footer text-right">

@@ -191,6 +191,19 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"Appointment for {self.patient} with {self.doctor} on {self.appointment_date}"
+# Ward Model
+class Ward(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)  # inactive wards stay linked to historical admissions but drop out of the "create admission" picklist
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 # Admission Model
 class Admission(models.Model):
     STATUS_CHOICES = [
@@ -198,7 +211,7 @@ class Admission(models.Model):
         ('Completed', 'Completed'),
         ('Cancelled', 'Cancelled'),
     ]
-    
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     admission_date = models.DateTimeField(auto_now_add=True)
@@ -206,7 +219,7 @@ class Admission(models.Model):
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Ongoing')
     reason_category = models.CharField(max_length=100, null=True, blank=True)
-    ward = models.CharField(max_length=100, null=True, blank=True)
+    ward = models.ForeignKey(Ward, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

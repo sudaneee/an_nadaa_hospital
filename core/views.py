@@ -1398,7 +1398,8 @@ def create_admission(request, appointment_id):
 
         if request.method == 'POST':
             reason = request.POST.get('reason')
-            ward = request.POST.get('ward')
+            ward_id = request.POST.get('ward')
+            ward = Ward.objects.filter(id=ward_id, is_active=True).first() if ward_id else None
 
             Admission.objects.create(
                 patient=appointment.patient,
@@ -1408,7 +1409,10 @@ def create_admission(request, appointment_id):
             )
             return redirect('admissions')
 
-        return render(request, 'core/create_admission.html', {'appointment': appointment})
+        return render(request, 'core/create_admission.html', {
+            'appointment': appointment,
+            'wards': Ward.objects.filter(is_active=True),
+        })
     return redirect('dashboard')
 
 @login_required(login_url='login')
